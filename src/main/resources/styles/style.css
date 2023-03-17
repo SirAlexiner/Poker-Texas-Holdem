@@ -1,0 +1,13 @@
+#Root {
+    -fx-background-image: url("../images/table.png");
+    -fx-background-repeat: stretch;
+    -fx-fill: stretch;
+}
+
+.tooltip {
+    -fx-background-radius: 50px;
+    -fx-background-insets: 0;
+    -fx-padding: 15px 100px 15px 100px;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.5) , 10, 0.0 , 0 , 3 );
+    -fx-font-size: 35px;
+}
