@@ -19,9 +19,9 @@ public class PokerAI {
   private boolean raiseMade;
   private int bet;
 
-  public static int getBet(Stage primaryStage, Card[] hand, int bet,
+  public static int getBet(Stage stage, Card[] hand, int bet,
                            int stack, boolean raiseMade, boolean first) {
-    stage = primaryStage;
+    PokerAI.stage = stage;
     PokerAI.raiseMade = raiseMade;
     PokerAI.bet = bet;
     if (stack != 0) {

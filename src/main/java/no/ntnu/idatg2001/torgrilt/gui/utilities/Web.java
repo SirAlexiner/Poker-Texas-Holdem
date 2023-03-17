@@ -5,7 +5,7 @@ import javafx.stage.Stage;
 
 public class Web extends Application {
   @Override
-  public void start(Stage primaryStage) {
+  public void start(Stage stage) {
     // Auto Stub
   }
 

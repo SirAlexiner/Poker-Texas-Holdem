@@ -19,7 +19,7 @@ import no.ntnu.idatg2001.torgrilt.io.github.siralexiner.fxmanager.FxManager;
 
 @UtilityClass
 public class Settings {
-  public static void addSettingsScene(Stage primaryStage) {
+  public static void addSettingsScene(Stage stage) {
     String themeStr = null;
     String rankStr = null;
     String suitStr = null;
@@ -52,20 +52,20 @@ public class Settings {
       // Execute different actions based on selected option
       switch (selectedOption) {
         case "Dark Mode" -> {
-          FxManager.enableDarkMode(primaryStage);
-          CustomCursor.setCustomCursor(primaryStage.getScene());
+          FxManager.enableDarkMode(stage);
+          CustomCursor.setCustomCursor(stage.getScene());
         }
         case "Light Mode" -> {
-          FxManager.enableLightMode(primaryStage);
-          CustomCursor.setCustomCursor(primaryStage.getScene());
+          FxManager.enableLightMode(stage);
+          CustomCursor.setCustomCursor(stage.getScene());
         }
         default -> {
           if (OsThemeDetector.getDetector().isDark()) {
-            FxManager.enableDarkMode(primaryStage);
-            CustomCursor.setCustomCursor(primaryStage.getScene());
+            FxManager.enableDarkMode(stage);
+            CustomCursor.setCustomCursor(stage.getScene());
           } else {
-            FxManager.enableLightMode(primaryStage);
-            CustomCursor.setCustomCursor(primaryStage.getScene());
+            FxManager.enableLightMode(stage);
+            CustomCursor.setCustomCursor(stage.getScene());
           }
         }
       }
@@ -140,7 +140,7 @@ public class Settings {
     AnchorPane.setRightAnchor(settingsBox, 0.0);
 
     AnchorPane anchorPane = new AnchorPane(settingsBox);
-    StackPane root = (StackPane) primaryStage.getScene().getRoot();
+    StackPane root = (StackPane) stage.getScene().getRoot();
     root.getChildren().add(anchorPane);
 
     goBack.setOnAction(event1 -> {
