@@ -12,4 +12,8 @@ public class Card {
     this.rank = rank;
     this.suit = suit;
   }
+
+  public String getCardImage() {
+    return "playingCards/" + this.getSuit() + "/" + this.getRank() + ".png";
+  }
 }
