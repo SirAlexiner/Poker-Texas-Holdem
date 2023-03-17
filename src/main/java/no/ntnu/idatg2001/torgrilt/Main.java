@@ -5,11 +5,14 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import no.ntnu.idatg2001.torgrilt.io.github.siralexiner.fxmanager.FxManager;
 
 public class Main extends Application {
 
   @Override
   public void start(Stage stage){
+
+    FxManager.setup(stage);
     stage.setFullScreenExitHint("");
     stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
     stage.setFullScreen(true);
