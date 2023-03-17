@@ -123,4 +123,4 @@ To play the game, simply follow the rules of Texas Hold'em. Enjoy!
 
 ## Documentation
 
-[Development Documentation](DevDoc.pdf)
+[Development Documentation](docs/DevDoc.pdf)
