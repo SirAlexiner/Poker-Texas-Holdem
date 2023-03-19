@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.geometry.Point3D;
@@ -80,7 +81,8 @@ public class GameFloor {
   @Getter
   private ArrayList<Card> drawnCards;
 
-  private int checks;
+  private boolean playerChecked;
+  private boolean aiChecked;
 
   private Tooltip tooltip;
 
@@ -136,12 +138,6 @@ public class GameFloor {
     newGame.setPrefWidth(GlobalElements.getButtonWidth() * 0.75);
     newGame.getStyleClass().addAll(Styles.SUCCESS, Styles.BUTTON_OUTLINED);
     newGame.setOnMouseClicked(event -> {
-      GlobalElements.setGameTurn(0);
-      Poker.setOpponentPot(GlobalElements.getDefaultStartingPot());
-      Poker.setPlayerPot(GlobalElements.getDefaultStartingPot());
-      if (tooltip != null) {
-        tooltip.hide();
-      }
       newGame();
     });
     newGame.setDisable(true);
@@ -216,6 +212,34 @@ public class GameFloor {
     check.setPrefWidth(GlobalElements.getButtonWidth() / 2);
     check.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
     check.setDisable(true);
+    check.setOnAction(event -> {
+      String s = "src/main/resources/audio/call.mp3";
+      AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
+      if (!MainMenu.getMuteButton().isSelected()) {
+        raisePlayer.play();
+      }
+      raise.setDisable(true);
+      call.setDisable(true);
+      check.setDisable(true);
+      fold.setDisable(true);
+      if (aiChecked) {
+        nextTurn(false);
+      } else {
+        playerChecked = true;
+        PauseTransition aiThink = new PauseTransition(new Duration(5000));
+        aiThink.setOnFinished(event1 -> {
+          Card[] cards = new Card[] {opponentCardOne, opponentCardTwo};
+          int opponentBet =
+              PokerAI.getBet(stage, cards, 0,
+                  Poker.getOpponentPot(),
+                  false, false);
+          turnPot.setText(String.valueOf(Integer.parseInt(turnPot.getText()) + opponentBet));
+          Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
+          opponentPot.setText(Poker.getOpponentPotString());
+        });
+        aiThink.play();
+      }
+    });
 
     call = new Button("Call");
     call.setStyle("-fx-font-size: 20px;");
@@ -274,6 +298,7 @@ public class GameFloor {
       Poker.setOpponentPot(Poker.getOpponentPot() + Integer.parseInt(turnPot.getText()));
       opponentPot.setText(Poker.getOpponentPotString());
       turnPot.setText("0");
+      Platform.runLater(GameFloor::newTurn);
     });
 
     HBox buttons = new HBox(raise, call, check, fold);
@@ -341,6 +366,28 @@ public class GameFloor {
     return scene;
   }
 
+  public static void newGame() {
+    Poker.setOpponentPot(GlobalElements.getDefaultStartingPot());
+    Poker.setPlayerPot(GlobalElements.getDefaultStartingPot());
+    if (tooltip != null) {
+      tooltip.hide();
+    }
+    GlobalElements.setGameTurn(0);
+    Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(stage.getScene().getWindow());
+    Optional<ButtonType> result = dialog.showAndWait();
+    if (result.isPresent() && result.get() == ButtonType.OK) {
+      board.clear();
+      GlobalElements.setRestarted(true);
+      Scene tempInstance = getGamescene(stage);
+      singleInstance = createGameScene(stage);
+      StackPane root = (StackPane) stage.getScene().getRoot();
+      root.getChildren().add(singleInstance.getRoot());
+      root.getChildren().remove(tempInstance.getRoot());
+    }
+  }
+
   private static void setStylePot(TextField playerPot, PseudoClass stateSuccess) {
     playerPot.setStyle("-fx-font-size: 20px;");
     playerPot.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ROUNDED);
@@ -349,7 +396,8 @@ public class GameFloor {
     playerPot.setOpacity(1);
   }
 
-  public void newGame() {
+  public void newTurn() {
+    GlobalElements.setGameTurn(0);
     Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.initOwner(stage.getScene().getWindow());
@@ -384,10 +432,19 @@ public class GameFloor {
     if (!MainMenu.getMuteButton().isSelected()) {
       raisePlayer.play();
     }
-    newGame.setDisable(false);
-    raise.setDisable(false);
-    call.setDisable(false);
-    fold.setDisable(false);
+    if (Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet())
+        == Poker.getPlayerPot()
+        || Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet() * 2)
+        == Poker.getPlayerPot()) {
+      raise.setText("All In");
+      raise.setDisable(false);
+      fold.setDisable(false);
+    } else {
+      newGame.setDisable(false);
+      raise.setDisable(false);
+      call.setDisable(false);
+      fold.setDisable(false);
+    }
   }
 
   public void aiCalledChecked(boolean checked) {
@@ -397,10 +454,14 @@ public class GameFloor {
       raisePlayer.play();
     }
     if (checked) {
-      checks += 1;
-      raise.setDisable(false);
-      check.setDisable(false);
-      fold.setDisable(false);
+      if (playerChecked) {
+        nextTurn(true);
+      } else {
+        aiChecked = true;
+        raise.setDisable(false);
+        check.setDisable(false);
+        fold.setDisable(false);
+      }
     } else {
       nextTurn(true);
     }
@@ -415,6 +476,7 @@ public class GameFloor {
     Poker.setPlayerPot(Poker.getPlayerPot() + Integer.parseInt(turnPot.getText()));
     playerPot.setText(Poker.getPlayerPotString());
     turnPot.setText("0");
+    Platform.runLater(GameFloor::newTurn);
   }
 
   public static void allIn() {
@@ -463,6 +525,8 @@ public class GameFloor {
   }
 
   public static void nextTurn(boolean aiCalled) {
+    playerChecked = false;
+    aiChecked = false;
     if (GlobalElements.getGameTurn() == 0) {
       board.add(getDrawnCards().remove(0));
       board.add(getDrawnCards().remove(0));
@@ -490,6 +554,7 @@ public class GameFloor {
         GameFloor.opponentPot.setText(Poker.getHand(opponentHand));
       });
       delay.play();
+
       Animate.showCards(getPlayerHand(), getOpponentHand());
       PauseTransition pauseTransition = new PauseTransition(new Duration(1000));
       pauseTransition.setOnFinished(event -> whoWon(playerHand, opponentHand));
@@ -501,27 +566,53 @@ public class GameFloor {
     if (Poker.getHandStrength(playerHand) > Poker.getHandStrength(opponentHand)) {
       tooltip = new Tooltip("Player Wins");
       tooltip.show(stage);
+      Poker.setPlayerPot(Poker.getPlayerPot() + Integer.parseInt(turnPot.getText()));
+      turnPot.setText("0");
     } else if (Poker.getHandStrength(playerHand) < Poker.getHandStrength(opponentHand)) {
       tooltip = new Tooltip("Computer Wins");
       tooltip.show(stage);
+      Poker.setOpponentPot(Poker.getOpponentPot() + Integer.parseInt(turnPot.getText()));
+      turnPot.setText("0");
+      Poker.setOpponentPot(Poker.getOpponentPot() + Integer.parseInt(turnPot.getText()) / 2);
+      Poker.setPlayerPot(Poker.getPlayerPot() + Integer.parseInt(turnPot.getText()) / 2);
+      turnPot.setText("0");
     } else {
       tooltip = new Tooltip("It's a Tie");
       tooltip.show(stage);
     }
+    PauseTransition delay = new PauseTransition(new Duration(5000));
+    delay.setOnFinished(event -> {
+      tooltip.hide();
+      Platform.runLater(GameFloor::newTurn);
+    });
+    delay.play();
   }
 
   private static void whoGoes(boolean aiCalled) {
-    PauseTransition delay = new PauseTransition(new Duration(2500));
-    delay.setOnFinished(event -> {
-      if (aiCalled) {
-        raise.setDisable(false);
-        check.setDisable(false);
-        fold.setDisable(false);
-      } else {
-        //TODO::Ai's Turn
+    if (aiCalled) {
+      if (Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet())
+          == Poker.getPlayerPot()
+          || Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet() * 2)
+          == Poker.getPlayerPot()) {
+        raise.setText("All In");
       }
-    });
-    delay.play();
+      raise.setDisable(false);
+      check.setDisable(false);
+      fold.setDisable(false);
+    } else {
+      PauseTransition aiThink = new PauseTransition(new Duration(5000));
+      aiThink.setOnFinished(event1 -> {
+        Card[] cards = new Card[] {opponentCardOne, opponentCardTwo};
+        int opponentBet =
+            PokerAI.getBet(stage, cards, 0,
+                Poker.getOpponentPot(),
+                false, false);
+        turnPot.setText(String.valueOf(Integer.parseInt(turnPot.getText()) + opponentBet));
+        Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
+        opponentPot.setText(Poker.getOpponentPotString());
+      });
+      aiThink.play();
+    }
   }
 
   @SuppressWarnings("checkstyle:AbbreviationAsWordInName")

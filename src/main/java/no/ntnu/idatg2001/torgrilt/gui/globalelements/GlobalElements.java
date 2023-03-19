@@ -26,5 +26,5 @@ public class GlobalElements {
   @Getter @Setter
   private int gameTurn = 0;
   @Getter
-  private final int defaultStartingPot = 2500;
+  private final int defaultStartingPot = 10000;
 }

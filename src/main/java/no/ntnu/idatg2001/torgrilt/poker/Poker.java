@@ -7,16 +7,17 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
+import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
 import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
 
 @UtilityClass
 public class Poker {
   @Getter
   @Setter
-  private int opponentPot = 1000;
+  private int opponentPot = GlobalElements.getDefaultStartingPot();
   @Getter
   @Setter
-  private int playerPot = 1000;
+  private int playerPot = GlobalElements.getDefaultStartingPot();
 
   public String getPlayerPotString() {
     return String.valueOf(playerPot);

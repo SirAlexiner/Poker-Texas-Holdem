@@ -2,6 +2,7 @@ package no.ntnu.idatg2001.torgrilt.poker;
 
 import java.util.Random;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -44,9 +45,7 @@ public class PokerAI {
         return aiBet;
       }
     } else {
-      // TODO::Update to ask for new game
-      fold();
-      displayAction("Fold");
+      Platform.runLater(GameFloor::newGame);
       return 0;
     }
   }
@@ -93,29 +92,41 @@ public class PokerAI {
       return foldOrCall(handStrength, x);
     } else {
       if (Math.max(y, handStrength) != handStrength) {
-        // Call : Check
-        return callCheck();
+        int z = rand.nextInt(1, 5);
+        if (z == 1) {
+          //Raise
+          return raise(bet * 2);
+        } else {
+          // Call : Check
+          return callCheck();
+        }
       } else {
-        //Raise
-        return raise(bet * 2);
+        int z = rand.nextInt(1, 3);
+        if (z == 1) {
+          //Raise
+          return raise(bet * 2);
+        } else {
+          // Call : Check
+          return callCheck();
+        }
       }
     }
   }
 
   private static int foldOrCall(double handStrength, double x) {
     if (handStrength <= x) {
-      int z = rand.nextInt(0, 4);
-      if (z == 0) {
-        //Fold
-        fold();
-        return 0;
+      //Fold
+      fold();
+      return 0;
+    } else {
+      int z = rand.nextInt(1, 5);
+      if (z == 1) {
+        //Raise
+        return raise(bet * 2);
       } else {
         // Call : Check
         return callCheck();
       }
-    } else {
-      // Call : Check
-      return callCheck();
     }
   }
 
