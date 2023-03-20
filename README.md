@@ -2,7 +2,7 @@
 
 # Texas Hold'em Game [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/)
 
-This is a Texas Hold'em game written in Java with OpenJDK 17.0.2, Maven and JavaFX.
+This is a Texas Hold'em game written in Java with OpenJDK 17, Maven and JavaFX.
 primarily for Windows
 
 ## Author
