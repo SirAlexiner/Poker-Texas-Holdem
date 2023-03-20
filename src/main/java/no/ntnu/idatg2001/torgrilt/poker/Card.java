@@ -1,14 +1,16 @@
 package no.ntnu.idatg2001.torgrilt.poker;
 
 import lombok.Getter;
+import no.ntnu.idatg2001.torgrilt.poker.enums.Ranks;
+import no.ntnu.idatg2001.torgrilt.poker.enums.Suits;
 
 public class Card {
   @Getter
-  String suit;
+  Suits suit;
   @Getter
-  String rank;
+  Ranks rank;
 
-  public Card(String rank, String suit) {
+  public Card(Ranks rank, Suits suit) {
     this.rank = rank;
     this.suit = suit;
   }

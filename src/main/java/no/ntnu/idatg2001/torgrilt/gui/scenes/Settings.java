@@ -33,7 +33,7 @@ public class Settings {
 
     // Create the content for the settings window
     VBox settingsBox = new VBox();
-    settingsBox.setId("Main Menu");
+    settingsBox.setId("no.ntnu.idatg2001.torgrilt.Main Menu");
     settingsBox.setStyle("-fx-background-color: rgba(128, 128, 128, 0.5);");
     settingsBox.setSpacing(15);
     settingsBox.setAlignment(Pos.CENTER);

@@ -1,4 +1,4 @@
-![Image of a table and gold logo that reads Texas Hold em](PTH.jpg)
+![Image of a table and gold logo that reads Texas Hold em](readme/PTH.jpg)
 
 # Texas Hold'em Game [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/)
 
@@ -32,7 +32,7 @@ Contributions to this project are welcome! If you would like to contribute, plea
 - Push your changes to your forked repository.
 - Submit a request to the original repository, explaining your changes and why they should be included.
   
-Please note that we will only accept contributions that are consistent with the game's purpose and goals. Additionally, any contributions must follow the `Code of Conduct` outlined in the [`conduct.md`](conduct.md), then read and agree to the [`contribute.md`](contribute.md) file
+Please note that we will only accept contributions that are consistent with the game's purpose and goals. Additionally, any contributions must follow the `Code of Conduct` outlined in the [`conduct.md`](readme/conduct.md), then read and agree to the [`contribute.md`](readme/contribute.md) file
 
 As previously mentioned, there have not been any contributions to this project so far, but we welcome any feedback or suggestions. If you encounter any issues or have ideas for improvements, please open up an issue.
 
@@ -59,7 +59,7 @@ The audio files and images used in this game are either created personally, by A
 - Sound effects and music to enhance the game experience.
   - Mute option to play silently
 - 3D Objects with real-time animations, and lighting.
-- Main Menu
+- TexasHoldem Menu
 - Settings
 
 

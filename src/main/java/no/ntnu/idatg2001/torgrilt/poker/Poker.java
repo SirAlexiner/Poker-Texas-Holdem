@@ -2,11 +2,15 @@ package no.ntnu.idatg2001.torgrilt.poker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
+import no.ntnu.idatg2001.torgrilt.poker.enums.Hands;
+import no.ntnu.idatg2001.torgrilt.poker.enums.Ranks;
+import no.ntnu.idatg2001.torgrilt.poker.enums.Suits;
 import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
 import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
 
@@ -28,56 +32,54 @@ public class Poker {
   }
 
   public static double getHandStrength(Card[] hand) {
-    double strength = 0;
-    switch (getHand(hand)) {
-      case "High Card" ->
-          strength = Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0);
-      case "One Pair" -> strength = 20 + getHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Two Pairs" -> strength = 60 + getHighest(hand) + getNextHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Three of a Kind" -> strength = 100 + getHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Straight" -> strength = 140 + getHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Flush" -> strength = 180 + getHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Full House" -> strength = 220 + getHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Four of a Kind" -> strength = 260 + getHighest(hand) + getNextHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Straight Flush" -> strength = 300 + getHighest(hand)
-          + Arrays.stream(hand).mapToInt(card -> getRank(card.getRank())).max().orElse(0) / 10.0;
-      case "Royal Straight Flush" -> strength += 1000;
-      default -> throw new IllegalArgumentException("Invalid hand: " + getHand(hand));
+    Hands handType = getHand(hand);
+    double strength = handType.getHandScore();
+
+    switch (handType) {
+      case HIGH_CARD, ONE_PAIR, TWO_PAIR,
+          THREE_OF_A_KIND, STRAIGHT,
+          FLUSH, FULL_HOUSE,
+          FOUR_OF_A_KIND, STRAIGHT_FLUSH -> {
+        strength += getHighest(hand)
+            + Arrays.stream(hand)
+            .mapToInt(card -> card.getRank().getRankInt())
+            .max()
+            .orElse(0) / 10.0;
+        if (handType.equals(Hands.TWO_PAIR) || handType.equals(Hands.FOUR_OF_A_KIND)) {
+          strength += getNextHighest(hand);
+        }
+      }
+      case ROYAL_STRAIGHT_FLUSH -> strength = handType.getHandScore();
+      default -> throw new IllegalArgumentException("Invalid hand: " + handType);
     }
+
     return strength;
   }
 
-  public static String getHand(Card[] hand) {
+  public static Hands getHand(Card[] hand) {
     int[] rank = new int[13];
     int[] suit = new int[4];
     Arrays.stream(hand).forEach(card -> {
-      rank[getRank(card.getRank())]++;
-      suit[getSuit(card.getSuit())]++;
+      rank[card.getRank().getRankInt()]++;
+      suit[card.getSuit().getSuitInt()]++;
     });
     if (GameFloor.getBoard() != null) {
       GameFloor.getBoard().forEach(card -> {
-        rank[getRank(card.getRank())]++;
-        suit[getSuit(card.getSuit())]++;
+        rank[card.getRank().getRankInt()]++;
+        suit[card.getSuit().getSuitInt()]++;
       });
     }
 
-    return getHandString(rank, suit, hand);
+    return getHandEnum(rank, suit, hand);
   }
 
   private static int getNextHighest(Card[] hand) {
     int maxIndex = getHighest(hand) / 2;
     int nextMaxIndex = 0;
     int[] rank = new int[13];
-    Arrays.stream(hand).forEach(card -> rank[getRank(card.getRank())]++);
+    Arrays.stream(hand).forEach(card -> rank[card.getRank().getRankInt()]++);
     if (GameFloor.getBoard() != null) {
-      GameFloor.getBoard().forEach(card -> rank[getRank(card.getRank())]++);
+      GameFloor.getBoard().forEach(card -> rank[card.getRank().getRankInt()]++);
     }
     for (int i = 1; i < rank.length; i++) {
       if (rank[i] != maxIndex && rank[i] > rank[nextMaxIndex]
@@ -91,9 +93,9 @@ public class Poker {
 
   private static int getHighest(Card[] hand) {
     int[] rank = new int[13];
-    Arrays.stream(hand).forEach(card -> rank[getRank(card.getRank())]++);
+    Arrays.stream(hand).forEach(card -> rank[card.getRank().getRankInt()]++);
     if (GameFloor.getBoard() != null) {
-      GameFloor.getBoard().forEach(card -> rank[getRank(card.getRank())]++);
+      GameFloor.getBoard().forEach(card -> rank[card.getRank().getRankInt()]++);
     }
     int maxIndex = 0;
     for (int i = 1; i < rank.length; i++) {
@@ -105,42 +107,39 @@ public class Poker {
     return maxIndex * 2;
   }
 
-  private static String getHandString(int[] rank, int[] suit, Card[] hand) {
+  private static Hands getHandEnum(int[] rank, int[] suit, Card[] hand) {
     if (isRoyal(hand)) {
-      return "Royal Straight Flush";
+      return Hands.ROYAL_STRAIGHT_FLUSH;
     } else {
       if (isStraightFlush(suit, hand)) {
-        return "Straight Flush";
+        return Hands.STRAIGHT_FLUSH;
       } else if (isFlush(suit)) {
-        return "Flush";
+        return Hands.FLUSH;
       } else if (isStraight(rank)) {
-        return "Straight";
+        return Hands.STRAIGHT;
       } else {
-        String x = getNumberOfPairs(rank);
+        Hands x = getNumberOfPairs(rank);
         if (x != null) {
           return x;
         }
-        return "High Card";
+        return Hands.HIGH_CARD;
       }
     }
   }
 
-  private static String getNumberOfPairs(int[] rank) {
-    int pairsCount = 0;
-    String fullHouse = null;
-    for (int j : rank) {
-      if (j == 4) {
-        return "Four of a Kind";
-      } else if (j == 3) {
-        return isFullHouseTres(rank);
-      } else if (j == 2) {
-        fullHouse = isFullHousePair(rank);
-        if (++pairsCount == 2) {
-          return "Two Pairs";
-        }
-      }
+  private static Hands getNumberOfPairs(int[] rank) {
+    int pairsCount = (int) Arrays.stream(rank).filter(i -> i == 2).count();
+    if (Arrays.stream(rank).anyMatch(i -> i == 4)) {
+      return Hands.FOUR_OF_A_KIND;
+    } else if (Arrays.stream(rank).anyMatch(i -> i == 3)) {
+      return isFullHouse(rank);
+    } else if (pairsCount >= 2) {
+      return Hands.TWO_PAIR;
+    } else if (pairsCount == 1) {
+      return Hands.ONE_PAIR;
+    } else {
+      return Hands.HIGH_CARD;
     }
-    return pairsCount == 1 ? "One Pair" : fullHouse;
   }
 
   private static boolean isRoyal(Card[] hand) {
@@ -150,12 +149,12 @@ public class Poker {
     boardHand.addAll(Arrays.asList(hand));
 
     // Sort the cards on the board and on hand by suit
-    HashMap<String, ArrayList<Card>> suitMap = getSuitMap(boardHand);
+    EnumMap<Suits, ArrayList<Card>> suitMap = getSuitMap(boardHand);
 
     // check if any suit has 5 or more cards in consecutive order from Ten to Ace
     boolean isRoyalFlush = false;
-    for (Map.Entry<String, ArrayList<Card>> entry : suitMap.entrySet()) {
-      String countedSuit = entry.getKey();
+    for (Map.Entry<Suits, ArrayList<Card>> entry : suitMap.entrySet()) {
+      Suits countedSuit = entry.getKey();
       ArrayList<Card> suitCards = entry.getValue();
       if (suitCards.size() >= 5 && isRoyalAndFlush(countedSuit, suitCards)) {
         isRoyalFlush = true;
@@ -164,16 +163,16 @@ public class Poker {
     return isRoyalFlush;
   }
 
-  private static boolean isRoyalAndFlush(String countedSuit, ArrayList<Card> suitCards) {
+  private static boolean isRoyalAndFlush(Suits countedSuit, ArrayList<Card> suitCards) {
     int suitCount = 0;
     for (Card suitCard : suitCards) {
-      String rank = suitCard.getRank();
-      String suit = suitCard.getSuit();
-      if (rank.equals("Ten") && suit.equals(countedSuit)
-          || rank.equals("Jack") && suit.equals(countedSuit)
-          || rank.equals("Queen") && suit.equals(countedSuit)
-          || rank.equals("King") && suit.equals(countedSuit)
-          || rank.equals("Ace") && suit.equals(countedSuit)) {
+      Ranks rank = suitCard.getRank();
+      Suits suit = suitCard.getSuit();
+      if (rank.equals(Ranks.TEN) && suit.equals(countedSuit)
+          || rank.equals(Ranks.JACK) && suit.equals(countedSuit)
+          || rank.equals(Ranks.QUEEN) && suit.equals(countedSuit)
+          || rank.equals(Ranks.KING) && suit.equals(countedSuit)
+          || rank.equals(Ranks.ACE) && suit.equals(countedSuit)) {
         suitCount++;
       } else {
         suitCount = 0;
@@ -182,11 +181,11 @@ public class Poker {
     return suitCount == 5;
   }
 
-  private static HashMap<String, ArrayList<Card>> getSuitMap(
+  private static EnumMap<Suits, ArrayList<Card>> getSuitMap(
       ArrayList<Card> boardHand) {
-    HashMap<String, ArrayList<Card>> suitMap = new HashMap<>();
+    EnumMap<Suits, ArrayList<Card>> suitMap = new EnumMap<>(Suits.class);
     for (Card card : boardHand) {
-      String suit = card.getSuit();
+      Suits suit = card.getSuit();
       if (suitMap.containsKey(suit)) {
         suitMap.get(suit).add(card);
       } else {
@@ -200,32 +199,23 @@ public class Poker {
 
   private static boolean isStraightFlush(int[] suit, Card[] hand) {
     ArrayList<Card> boardHand = new ArrayList<>();
-    String flushCard;
-    int maxIndex = 0;
-    for (int i = 1; i < suit.length; i++) {
-      if (suit[i] >= 5) {
-        maxIndex = i;
-      }
-    }
-    switch (maxIndex) {
-      case 0 -> flushCard = "Hearts";
-      case 1 -> flushCard = "Diamonds";
-      case 2 -> flushCard = "Clubs";
-      case 3 -> flushCard = "Spades";
-      default -> throw new IndexOutOfBoundsException("Illegal Index: " + maxIndex);
-    }
+    Suits flushCard;
+    int maxIndex = IntStream.range(1, suit.length)
+        .filter(i -> suit[i] >= 5)
+        .max()
+        .orElse(0);
+    flushCard =
+        Suits.stream().filter(d -> d.getSuitInt() == maxIndex).findFirst().orElse(null);
     int[] rank = new int[13];
     boardHand.addAll(GameFloor.getBoard());
     boardHand.addAll(Arrays.asList(hand));
-    for (Card card : boardHand) {
-      if (card.getSuit().equals(flushCard)) {
-        rank[getRank(card.getRank())]++;
-      }
-    }
+    boardHand.stream()
+        .filter(card -> card.getSuit().equals(flushCard))
+        .forEach(card -> rank[card.getRank().getRankInt()]++);
     return isStraight(rank);
   }
 
-  private static String isFullHouseTres(int[] arr) {
+  private static Hands isFullHouse(int[] arr) {
     int house = 0;
     for (int j : arr) {
       if (j >= 2) {
@@ -233,23 +223,9 @@ public class Poker {
       }
     }
     if (house >= 2) {
-      return "Full House";
+      return Hands.FULL_HOUSE;
     } else {
-      return "Three of a Kind";
-    }
-  }
-
-  private static String isFullHousePair(int[] arr) {
-    int house = 0;
-    for (int j : arr) {
-      if (j >= 3) {
-        house++;
-      }
-    }
-    if (house >= 1) {
-      return "Full House";
-    } else {
-      return "Pair";
+      return Hands.THREE_OF_A_KIND;
     }
   }
 
@@ -276,34 +252,5 @@ public class Poker {
       }
     }
     return false;
-  }
-
-  private static int getSuit(String suit) {
-    return switch (suit) {
-      case "Hearts" -> 0;
-      case "Diamonds" -> 1;
-      case "Clubs" -> 2;
-      case "Spades" -> 3;
-      default -> throw new IllegalArgumentException("Invalid suit: " + suit);
-    };
-  }
-
-  private static int getRank(String rank) {
-    return switch (rank) {
-      case "Two" -> 0;
-      case "Three" -> 1;
-      case "Four" -> 2;
-      case "Five" -> 3;
-      case "Six" -> 4;
-      case "Seven" -> 5;
-      case "Eight" -> 6;
-      case "Nine" -> 7;
-      case "Ten" -> 8;
-      case "Jack" -> 9;
-      case "Queen" -> 10;
-      case "King" -> 11;
-      case "Ace" -> 12;
-      default -> throw new IllegalArgumentException("Invalid rank: " + rank);
-    };
   }
 }

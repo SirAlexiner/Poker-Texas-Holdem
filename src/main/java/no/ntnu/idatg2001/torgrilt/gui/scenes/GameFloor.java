@@ -549,11 +549,6 @@ public class GameFloor {
       Card[] opponentHand = {opponentCardOne, opponentCardTwo};
 
       PauseTransition delay = new PauseTransition(new Duration(500));
-      delay.setOnFinished(event -> {
-        GameFloor.playerPot.setText(Poker.getHand(playerHand));
-        GameFloor.opponentPot.setText(Poker.getHand(opponentHand));
-      });
-      delay.play();
 
       Animate.showCards(getPlayerHand(), getOpponentHand());
       PauseTransition pauseTransition = new PauseTransition(new Duration(1000));

@@ -1,5 +1,7 @@
 package no.ntnu.idatg2001.torgrilt.gui.globalelements;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import javafx.stage.Screen;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +17,13 @@ public class GlobalElements {
   private final double cardDepth = 4;
   @Getter
   private final double buttonWidth = 200;
+
+  private final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
   @Getter
-  private final double sceneWidth = Screen.getPrimary().getBounds().getWidth();
+  private final double sceneWidth = screenSize.getWidth();
   @Getter
-  private final double sceneHeight = Screen.getPrimary().getBounds().getHeight();
+  private final double sceneHeight = screenSize.getHeight();
   @Getter @Setter
   private int previousBet = 0;
   @Getter @Setter

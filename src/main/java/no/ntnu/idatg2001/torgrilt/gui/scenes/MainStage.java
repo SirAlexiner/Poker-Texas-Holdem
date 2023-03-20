@@ -1,5 +1,6 @@
 package no.ntnu.idatg2001.torgrilt.gui.scenes;
 
+import javafx.application.Application;
 import javafx.scene.AmbientLight;
 import javafx.scene.DepthTest;
 import javafx.scene.PointLight;
@@ -11,10 +12,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
+import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
+import no.ntnu.idatg2001.torgrilt.gui.scenes.MainMenu;
 import no.ntnu.idatg2001.torgrilt.gui.utilities.CustomCursor;
 import no.ntnu.idatg2001.torgrilt.io.github.siralexiner.fxmanager.FxManager;
 
-public class MainView extends javafx.application.Application {
+public class MainStage extends Application {
 
   private static final AmbientLight ambientLight = new AmbientLight(Color.WHITE.darker());
 
@@ -67,7 +70,7 @@ public class MainView extends javafx.application.Application {
     System.exit(0);
   }
 
-  public static void run(String[] args) {
+  public static void open(String[] args) {
     launch(args);
   }
 }
