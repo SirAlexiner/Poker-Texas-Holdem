@@ -12,8 +12,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
-import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
-import no.ntnu.idatg2001.torgrilt.gui.scenes.MainMenu;
 import no.ntnu.idatg2001.torgrilt.gui.utilities.CustomCursor;
 import no.ntnu.idatg2001.torgrilt.io.github.siralexiner.fxmanager.FxManager;
 

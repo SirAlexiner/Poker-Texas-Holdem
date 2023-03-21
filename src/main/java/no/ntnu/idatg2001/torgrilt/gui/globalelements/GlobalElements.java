@@ -2,7 +2,6 @@ package no.ntnu.idatg2001.torgrilt.gui.globalelements;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import javafx.stage.Screen;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
@@ -25,11 +24,11 @@ public class GlobalElements {
   @Getter
   private final double sceneHeight = screenSize.getHeight();
   @Getter @Setter
-  private int previousBet = 0;
+  private double previousBet = 0.0;
   @Getter @Setter
   private boolean restarted = false;
   @Getter @Setter
   private int gameTurn = 0;
   @Getter
-  private final int defaultStartingPot = 10000;
+  private final double defaultStartingPot = 10000.0;
 }

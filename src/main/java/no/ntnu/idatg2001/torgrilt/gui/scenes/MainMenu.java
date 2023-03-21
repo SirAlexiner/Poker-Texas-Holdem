@@ -132,7 +132,7 @@ public class MainMenu {
     camera.setFarClip(100.0);
     scene.setCamera(camera);
 
-    AudioClip mediaPlayer = getAudioClip(stage);
+    AudioClip mediaPlayer = getAudioClip();
 
     String start = "src/main/resources/audio/start.wav";
     AudioClip startPlayer = new AudioClip(new File(start).toURI().toString());
@@ -152,11 +152,8 @@ public class MainMenu {
         StackPane root = (StackPane) stage.getScene().getRoot();
         root.getChildren().remove(1);
         Animate.shuffle(GameFloor.getDeckOfCard());
-        //Initialising path of the media file, replace this with your file path
         String path2 = "src/main/resources/audio/theme2.mp3";
-        //Instantiating MediaPlayer class
         mediaPlayer2 = new AudioClip(new File(path2).toURI().toString());
-        //by setting this property to true, the audio will be played
         if (!MainMenu.getMuteButton().isSelected()) {
           mediaPlayer2.setCycleCount(AudioClip.INDEFINITE);
           mediaPlayer2.play(Double.MAX_VALUE);
@@ -167,7 +164,7 @@ public class MainMenu {
     return scene;
   }
 
-  private static AudioClip getAudioClip(Stage stage) {
+  private static AudioClip getAudioClip() {
     //Initialising path of the media file, replace this with your file path
     String path = "src/main/resources/audio/theme.mp3";
     //Instantiating MediaPlayer class
@@ -186,10 +183,10 @@ public class MainMenu {
       } else {
         // If the button is not selected, set the mute icon
         muteButton.setGraphic(new FontIcon(Feather.VOLUME_2));
-        if (stage.getScene().getRoot().getId() != null) {
+        if (mediaPlayer2 == null) {
           mediaPlayer.setCycleCount(AudioClip.INDEFINITE);
           mediaPlayer.play(Double.MAX_VALUE);
-        } else if (mediaPlayer2 != null) {
+        } else {
           mediaPlayer2.setCycleCount(AudioClip.INDEFINITE);
           mediaPlayer2.play(Double.MAX_VALUE);
         }

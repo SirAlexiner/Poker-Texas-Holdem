@@ -8,28 +8,20 @@ import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
+import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
+import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Hands;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Ranks;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Suits;
-import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
-import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
 
 @UtilityClass
 public class Poker {
   @Getter
   @Setter
-  private int opponentPot = GlobalElements.getDefaultStartingPot();
+  private double opponentPot = GlobalElements.getDefaultStartingPot();
   @Getter
   @Setter
-  private int playerPot = GlobalElements.getDefaultStartingPot();
-
-  public String getPlayerPotString() {
-    return String.valueOf(playerPot);
-  }
-
-  public String getOpponentPotString() {
-    return String.valueOf(opponentPot);
-  }
+  private double playerPot = GlobalElements.getDefaultStartingPot();
 
   public static double getHandStrength(Card[] hand) {
     Hands handType = getHand(hand);
@@ -230,12 +222,7 @@ public class Poker {
   }
 
   private static boolean isFlush(int[] suit) {
-    for (int j : suit) {
-      if (j >= 5) {
-        return true;
-      }
-    }
-    return false;
+    return Arrays.stream(suit).anyMatch(i -> i >= 5);
   }
 
   private static boolean isStraight(int[] rank) {

@@ -1,5 +1,7 @@
 package no.ntnu.idatg2001.torgrilt.poker;
 
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Random;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -15,23 +17,23 @@ import no.ntnu.idatg2001.torgrilt.gui.utilities.Animate;
 @UtilityClass
 public class PokerAI {
 
-  private final Random rand = new Random();
+  private final Random rand = new SecureRandom();
   private Stage stage;
   private boolean raiseMade;
-  private int bet;
+  private double bet;
 
-  public static int getBet(Stage stage, Card[] hand, int bet,
-                           int stack, boolean raiseMade, boolean first) {
+  public static double getBet(Stage stage, Card[] hand, double bet,
+                           double stack, boolean raiseMade, boolean first) {
     PokerAI.stage = stage;
     PokerAI.raiseMade = raiseMade;
     PokerAI.bet = bet;
-    if (stack != 0) {
+    if (stack != 0.0 && Poker.getPlayerPot() != 0) {
       int minBet = 20;
       if (first) {
         return gameStartBet(stack, minBet);
       } else {
         double handStrength = Poker.getHandStrength(hand);
-        int aiBet = Math.min(getBetAction(handStrength), stack);
+        double aiBet = Math.min(getBetAction(handStrength), stack);
         if (aiBet == stack) {
           displayAction("All In!");
           if (GlobalElements.getGameTurn() < 3) {
@@ -50,98 +52,92 @@ public class PokerAI {
     }
   }
 
-  private static int gameStartBet(int stack, int minBet) {
+  private static double gameStartBet(double stack, int minBet) {
     // Raise
-    int aiBet = Math.min(minBet, stack);
+    double aiBet = Math.min(minBet, stack);
     if (aiBet == stack) {
       displayAction("All In!");
       GameFloor.aiAllIn();
       Animate.showBoard();
+      GlobalElements.setPreviousBet(aiBet);
       return aiBet;
     } else {
+      GlobalElements.setPreviousBet(aiBet);
       return raise(aiBet);
     }
   }
 
-  private static int getBetAction(double handStrength) {
-    if (handStrength < 20) {
-      return calculateAction(handStrength, 3, 8);
-    } else if (handStrength < 60) {
-      return calculateAction(handStrength, 27.20, 37.20);
-    } else if (handStrength < 100) {
-      return calculateAction(handStrength, 72.20, 84.20);
-    } else if (handStrength < 140) {
-      return calculateAction(handStrength, 107.20, 117.20);
-    } else if (handStrength < 180) {
-      return calculateAction(handStrength, 153.20, 159.20);
-    } else if (handStrength < 220) {
-      return calculateAction(handStrength, 193.20, 199.20);
-    } else if (handStrength < 260) {
-      return calculateAction(handStrength, 232.20, 244.20);
-    } else if (handStrength < 300) {
-      return calculateAction(handStrength, 267.20, 277.20);
-    } else if (handStrength < 1000) {
-      return calculateAction(handStrength, 313.20, 319.20);
-    } else {
-      return 10000;
-    }
+  private static double getBetAction(double handStrength) {
+    double[][] thresholds = {
+        {20, 3, 8}, // High Card
+        {60, 27.20, 37.20}, // One Pair
+        {100, 72.20, 84.20}, // Two Pairs
+        {140, 107.20, 117.20}, // Three of a Kind
+        {180, 153.20, 159.20}, // Straight
+        {220, 193.20, 199.20}, // Flush
+        {260, 232.20, 244.20}, // Full House
+        {300, 267.20, 277.20}, // Four of a Kind
+        {1000, 313.20, 319.20} // Straight Flush
+    };
+
+    return Arrays.stream(thresholds)
+        .filter(row -> handStrength < row[0])
+        .findFirst()
+        .map(row -> calculateAction(handStrength, row[1], row[2]))
+        .orElse(10000.0);
   }
 
-  private static int calculateAction(double handStrength, double x, double y) {
-    if (handStrength <= y) {
-      return foldOrCall(handStrength, x);
-    } else {
-      if (Math.max(y, handStrength) != handStrength) {
-        int z = rand.nextInt(1, 5);
-        if (z == 1) {
-          //Raise
-          return raise(bet * 2);
-        } else {
-          // Call : Check
-          return callCheck();
-        }
-      } else {
-        int z = rand.nextInt(1, 3);
-        if (z == 1) {
-          //Raise
-          return raise(bet * 2);
-        } else {
-          // Call : Check
-          return callCheck();
-        }
-      }
-    }
-  }
-
-  private static int foldOrCall(double handStrength, double x) {
+  private synchronized double calculateAction(double handStrength, double x, double y) {
     if (handStrength <= x) {
-      //Fold
-      fold();
-      return 0;
-    } else {
       int z = rand.nextInt(1, 5);
-      if (z == 1) {
-        //Raise
-        return raise(bet * 2);
+      return callOrFold(z);
+    } else if (handStrength <= y) {
+      int z = rand.nextInt(1, 5);
+      return callOrRaise(z);
+    } else {
+      int z;
+      if (Math.max(y, handStrength) != handStrength) {
+        z = rand.nextInt(1, 5);
       } else {
-        // Call : Check
-        return callCheck();
+        z = rand.nextInt(1, 3);
       }
+      return callOrRaise(z);
     }
   }
 
-  private static void fold() {
+  private static double callOrFold(int z) {
+    if (z == 1) {
+      // Fold
+      return fold();
+    } else {
+      // Call : Check
+      return callCheck();
+    }
+  }
+
+  private static double callOrRaise(int z) {
+    if (z == 1) {
+      // Raise
+      return raise(bet * 2);
+    } else {
+      // Call : Check
+      return callCheck();
+    }
+  }
+
+  private static int fold() {
     displayAction("Fold");
     GameFloor.aiFolded();
+    return 0;
   }
 
-  private static int raise(int bet) {
+  private static double raise(double bet) {
     displayAction("Raise");
     GameFloor.aiRaised();
     return bet;
   }
 
-  private static int callCheck() {
+  private static double callCheck() {
     displayAction(raiseMade ? "Call" : "Check");
     GameFloor.aiCalledChecked(!raiseMade);
     return raiseMade ? bet : 0;
