@@ -364,7 +364,6 @@ public class Animate {
         dealPlayer = new AudioClip(new File(path1).toURI().toString());
         dealPlayer.play();
       }
-
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -372,14 +371,12 @@ public class Animate {
 
   private static void playShuffleAudio() {
     try {
-      // Create a new DocumentBuilderFactory instance
       String settingMuted = XmlSettings.getSettingMuted();
       if (settingMuted.equals("False")) {
         String path = "src/main/resources/audio/cardShuffle.wav";
         shufflePlayer = new AudioClip(new File(path).toURI().toString());
         shufflePlayer.play();
       }
-
     } catch (Exception e) {
       e.printStackTrace();
     }

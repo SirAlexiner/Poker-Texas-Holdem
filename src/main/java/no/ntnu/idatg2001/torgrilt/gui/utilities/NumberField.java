@@ -36,14 +36,14 @@ public class NumberField extends TextField {
    */
   public double getDouble() {
     String value = getText();
-    if (isValid(value)) {
-      try {
+    try {
+      if (isValid(value)) {
         BigDecimal parsedNumber = (BigDecimal) decimalFormat.parse(value);
         return parsedNumber.doubleValue();
-      } catch (ParseException e) {
+      } else {
         throw new NumberFormatException("Invalid double value: " + value);
       }
-    } else {
+    } catch (ParseException e) {
       throw new NumberFormatException("Invalid double value: " + value);
     }
   }

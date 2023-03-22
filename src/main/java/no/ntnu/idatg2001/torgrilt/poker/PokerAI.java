@@ -52,11 +52,10 @@ public class PokerAI {
         double aiBet = Math.min(getBetAction(handStrength), stack);
         if (aiBet == stack) {
           displayAction("All In!");
+          GameFloor.aiAllIn();
           if (GlobalElements.getGameTurn() < 3) {
-            GameFloor.aiAllIn();
             Animate.showBoard();
           } else {
-            GameFloor.aiAllIn();
             GameFloor.allIn();
           }
         }
@@ -104,41 +103,23 @@ public class PokerAI {
   }
 
   private synchronized double calculateAction(double handStrength, double x, double y) {
+    int z = rand.nextInt(1, 5);
     if (handStrength <= x) {
-      int z = rand.nextInt(1, 5);
       return callOrFold(z);
     } else if (handStrength <= y) {
-      int z = rand.nextInt(1, 5);
       return callOrRaise(z);
     } else {
-      int z;
-      if (Math.max(y, handStrength) != handStrength) {
-        z = rand.nextInt(1, 5);
-      } else {
-        z = rand.nextInt(1, 3);
-      }
+      z = Math.max(y, handStrength) != handStrength ? rand.nextInt(1, 5) : rand.nextInt(1, 3);
       return callOrRaise(z);
     }
   }
 
   private static double callOrFold(int z) {
-    if (z == 1) {
-      // Fold
-      return fold();
-    } else {
-      // Call : Check
-      return callCheck();
-    }
+    return z == 1 ? fold() : callCheck();
   }
 
   private static double callOrRaise(int z) {
-    if (z == 1) {
-      // Raise
-      return raise(bet * 2);
-    } else {
-      // Call : Check
-      return callCheck();
-    }
+    return z == 1 ? raise(bet * 2) : callCheck();
   }
 
   private static int fold() {

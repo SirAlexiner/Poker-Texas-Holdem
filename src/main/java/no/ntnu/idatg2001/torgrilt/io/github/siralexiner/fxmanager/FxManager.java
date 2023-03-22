@@ -70,14 +70,12 @@ public class FxManager {
     if (xmlFile.exists()) {
       readxml(stage);
     } else {
-      final boolean isDarkThemeUsed = detector.isDark();
-      if (isDarkThemeUsed) {
-        enableDarkMode(stage);
-        isDark = true;
-      } else {
-        enableLightMode(stage);
-        isDark = false;
-      }
+      isDark = detector.isDark();
+    }
+    if (isDark) {
+      enableDarkMode(stage);
+    } else {
+      enableLightMode(stage);
     }
   }
 
@@ -96,21 +94,11 @@ public class FxManager {
       Element rootElement = document.getDocumentElement();
 
       String theme = rootElement.getElementsByTagName("Theme").item(0).getTextContent();
-      if (theme.equals("Dark Mode")) {
+      isDark = theme.equals("Dark Mode") || (theme.equals("System Default") && detector.isDark());
+      if (isDark) {
         enableDarkMode(stage);
-        isDark = true;
-      } else if (theme.equals("Light Mode")) {
-        enableLightMode(stage);
-        isDark = false;
       } else {
-        final boolean isDarkThemeUsed = detector.isDark();
-        if (isDarkThemeUsed) {
-          enableDarkMode(stage);
-          isDark = true;
-        } else {
-          enableLightMode(stage);
-          isDark = false;
-        }
+        enableLightMode(stage);
       }
     } catch (Exception e) {
       e.printStackTrace();

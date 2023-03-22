@@ -245,27 +245,14 @@ public class Card3D {
       };
       String[] suit = {"Clubs", "Diamonds", "Hearts", "Spades"};
 
-      if (settingCardSuit.equals(randString) && settingCardRank.equals(randString)) {
-        int indexRank = rand.nextInt(rank.length);
-        String cardRank = rank[indexRank];
-
-        int indexSuit = rand.nextInt(suit.length);
-        String cardSuit = suit[indexSuit];
-
-        animatedCard = cardImageFolder + cardSuit + "/" + cardRank + ".png";
-      } else if (!settingCardSuit.equals(randString) && settingCardRank.equals(randString)) {
-        int indexRank = rand.nextInt(rank.length);
-        String cardRank = rank[indexRank];
-
-        animatedCard = cardImageFolder + settingCardSuit + "/" + cardRank + ".png";
-      } else if (settingCardSuit.equals(randString)) {
-        int indexSuit = rand.nextInt(suit.length);
-        String cardSuit = suit[indexSuit];
-
-        animatedCard = cardImageFolder + cardSuit + "/" + settingCardRank + ".png";
-      } else {
-        animatedCard = cardImageFolder + settingCardSuit + "/" + settingCardRank + ".png";
-      }
+      animatedCard = settingCardSuit.equals(randString) && settingCardRank.equals(randString)
+          ? cardImageFolder + suit[rand.nextInt(suit.length)]
+            + "/" + rank[rand.nextInt(rank.length)] + ".png"
+          : !settingCardSuit.equals(randString) && settingCardRank.equals(randString)
+          ? cardImageFolder + settingCardSuit + "/" + rank[rand.nextInt(rank.length)] + ".png"
+          : settingCardSuit.equals(randString)
+          ? cardImageFolder + suit[rand.nextInt(suit.length)] + "/" + settingCardRank + ".png"
+          : cardImageFolder + settingCardSuit + "/" + settingCardRank + ".png";
 
     } catch (Exception e) {
       e.printStackTrace();

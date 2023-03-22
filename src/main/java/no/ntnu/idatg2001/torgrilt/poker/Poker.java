@@ -3,6 +3,7 @@ package no.ntnu.idatg2001.torgrilt.poker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -74,13 +75,11 @@ public class Poker {
       rank[card.getRank().getRankInt()]++;
       suit[card.getSuit().getSuitInt()]++;
     });
-    if (GameFloor.getBoard() != null) {
-      GameFloor.getBoard().forEach(card -> {
-        rank[card.getRank().getRankInt()]++;
-        suit[card.getSuit().getSuitInt()]++;
-      });
-    }
-
+    Optional.ofNullable(GameFloor.getBoard())
+        .ifPresent(board -> board.forEach(card -> {
+          rank[card.getRank().getRankInt()]++;
+          suit[card.getSuit().getSuitInt()]++;
+        }));
     return getHandEnum(rank, suit, hand);
   }
 
@@ -89,9 +88,8 @@ public class Poker {
     int nextMaxIndex = 0;
     int[] rank = new int[13];
     Arrays.stream(hand).forEach(card -> rank[card.getRank().getRankInt()]++);
-    if (GameFloor.getBoard() != null) {
-      GameFloor.getBoard().forEach(card -> rank[card.getRank().getRankInt()]++);
-    }
+    Optional.ofNullable(GameFloor.getBoard())
+        .ifPresent(board -> board.forEach(card -> rank[card.getRank().getRankInt()]++));
     return IntStream.range(1, rank.length).filter(i ->
             rank[i] != maxIndex
                 && rank[i] > rank[nextMaxIndex]
@@ -105,9 +103,8 @@ public class Poker {
   private static int getHighest(Card[] hand) {
     int[] rank = new int[13];
     Arrays.stream(hand).forEach(card -> rank[card.getRank().getRankInt()]++);
-    if (GameFloor.getBoard() != null) {
-      GameFloor.getBoard().forEach(card -> rank[card.getRank().getRankInt()]++);
-    }
+    Optional.ofNullable(GameFloor.getBoard())
+        .ifPresent(board -> board.forEach(card -> rank[card.getRank().getRankInt()]++));
     int maxIndex = 0;
     return IntStream.range(1, rank.length).filter(i ->
             rank[i] > rank[maxIndex]
@@ -118,38 +115,21 @@ public class Poker {
   }
 
   private static Hands getHandEnum(int[] rank, int[] suit, Card[] hand) {
-    if (isRoyal(hand)) {
-      return Hands.ROYAL_STRAIGHT_FLUSH;
-    } else {
-      if (isStraightFlush(suit, hand)) {
-        return Hands.STRAIGHT_FLUSH;
-      } else if (isFlush(suit)) {
-        return Hands.FLUSH;
-      } else if (isStraight(rank)) {
-        return Hands.STRAIGHT;
-      } else {
-        Hands x = getNumberOfPairs(rank);
-        if (x != null) {
-          return x;
-        }
-        return Hands.HIGH_CARD;
-      }
-    }
+    return isRoyal(hand) ? Hands.ROYAL_STRAIGHT_FLUSH
+        : isStraightFlush(suit, hand) ? Hands.STRAIGHT_FLUSH
+        : isFlush(suit) ? Hands.FLUSH
+        : isStraight(rank) ? Hands.STRAIGHT
+        : getNumberOfPairs(rank) != null ? getNumberOfPairs(rank)
+        : Hands.HIGH_CARD;
   }
 
   private static Hands getNumberOfPairs(int[] rank) {
     int pairsCount = (int) Arrays.stream(rank).filter(i -> i == 2).count();
-    if (Arrays.stream(rank).anyMatch(i -> i == 4)) {
-      return Hands.FOUR_OF_A_KIND;
-    } else if (Arrays.stream(rank).anyMatch(i -> i == 3)) {
-      return isFullHouse(rank);
-    } else if (pairsCount >= 2) {
-      return Hands.TWO_PAIR;
-    } else if (pairsCount == 1) {
-      return Hands.ONE_PAIR;
-    } else {
-      return Hands.HIGH_CARD;
-    }
+    return Arrays.stream(rank).anyMatch(i -> i == 4) ? Hands.FOUR_OF_A_KIND
+        : Arrays.stream(rank).anyMatch(i -> i == 3) ? isFullHouse(rank)
+        : pairsCount >= 2 ? Hands.TWO_PAIR
+        : pairsCount == 1 ? Hands.ONE_PAIR
+        : Hands.HIGH_CARD;
   }
 
   private static boolean isRoyal(Card[] hand) {
@@ -206,13 +186,11 @@ public class Poker {
 
   private static boolean isStraight(int[] rank) {
     AtomicInteger count = new AtomicInteger();
-    Arrays.stream(rank).forEach(i -> {
-      if (i >= 1) {
-        count.getAndIncrement();
-      } else if (count.get() < 5) {
-        count.set(0);
-      }
-    });
+    Arrays.stream(rank).forEach(i ->
+        count.getAndSet((i >= 1) ? count.get() + 1
+            : (count.get() < 5) ? 0
+            : count.get())
+    );
     return count.get() >= 5;
   }
 }

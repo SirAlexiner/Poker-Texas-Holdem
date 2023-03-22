@@ -610,23 +610,27 @@ public class GameFloor {
   }
 
   private static void whoWon(Card[] playerHand, Card[] opponentHand) {
-    if (Poker.getHandStrength(playerHand) > Poker.getHandStrength(opponentHand)) {
-      tooltip = new Tooltip("Player Wins");
-      tooltip.show(stage);
-      Poker.setPlayerPot(Poker.getPlayerPot() + turnPot.getDouble());
-      turnPot.setDouble(0.0);
-    } else if (Poker.getHandStrength(playerHand) < Poker.getHandStrength(opponentHand)) {
-      tooltip = new Tooltip("Computer Wins");
-      tooltip.show(stage);
-      Poker.setOpponentPot(Poker.getOpponentPot() + turnPot.getDouble());
-      turnPot.setDouble(0.0);
+    double playerHandStrength = Poker.getHandStrength(playerHand);
+    double opponentHandStrength = Poker.getHandStrength(opponentHand);
+    tooltip = playerHandStrength > opponentHandStrength
+        ? new Tooltip("Player Wins")
+        : playerHandStrength < opponentHandStrength
+            ? new Tooltip("Computer Wins")
+            : new Tooltip("It's a Tie");
+    if (playerHandStrength != opponentHandStrength) {
+      Poker.setPlayerPot(playerHandStrength > opponentHandStrength
+          ? Poker.getPlayerPot() + turnPot.getDouble()
+          : Poker.getPlayerPot());
+      Poker.setOpponentPot(playerHandStrength < opponentHandStrength
+          ? Poker.getOpponentPot() + turnPot.getDouble()
+          : Poker.getOpponentPot());
     } else {
-      tooltip = new Tooltip("It's a Tie");
-      tooltip.show(stage);
-      Poker.setOpponentPot(Poker.getOpponentPot() + turnPot.getDouble() / 2.0);
-      Poker.setPlayerPot(Poker.getPlayerPot() + turnPot.getDouble() / 2.0);
-      turnPot.setDouble(0.0);
+      double halfPot = turnPot.getDouble() / 2.0;
+      Poker.setOpponentPot(Poker.getOpponentPot() + halfPot);
+      Poker.setPlayerPot(Poker.getPlayerPot() + halfPot);
     }
+    turnPot.setDouble(0.0);
+    tooltip.show(stage);
     PauseTransition delay = new PauseTransition(new Duration(2500));
     delay.setOnFinished(event -> {
       tooltip.hide();
@@ -637,10 +641,8 @@ public class GameFloor {
 
   private static void whoGoes(boolean aiCalled) {
     if (aiCalled) {
-      if (Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet())
-          == Poker.getPlayerPot()
-          || Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet() * 2)
-          == Poker.getPlayerPot()) {
+      double minPot = Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet());
+      if (minPot == Poker.getPlayerPot() || minPot == GlobalElements.getPreviousBet() * 2) {
         raise.setText(allIn);
       }
       raise.setDisable(false);

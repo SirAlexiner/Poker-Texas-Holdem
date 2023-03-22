@@ -174,31 +174,21 @@ public class MainMenu {
   }
 
   private static AudioClip getAudioClip() {
-    //Initialising path of the media file, replace this with your file path
     String path = "src/main/resources/audio/theme.mp3";
-    //Instantiating MediaPlayer class
     AudioClip mediaPlayer = new AudioClip(new File(path).toURI().toString());
-    //by setting this property to true, the audio will be played
     if (!muteButton.isSelected()) {
       Objects.requireNonNullElse(mediaPlayer2, mediaPlayer).setCycleCount(AudioClip.INDEFINITE);
       Objects.requireNonNullElse(mediaPlayer2, mediaPlayer).play(Double.MAX_VALUE);
     }
-    // Set the action to be performed when the button is clicked
     muteButton.setOnMouseClicked(e -> {
       if (muteButton.isSelected()) {
-        // If the button is selected, set the unmute icon
         muteButton.setGraphic(new FontIcon(Feather.VOLUME_X));
         Objects.requireNonNullElse(mediaPlayer2, mediaPlayer).stop();
       } else {
-        // If the button is not selected, set the mute icon
         muteButton.setGraphic(new FontIcon(Feather.VOLUME_2));
-        if (mediaPlayer2 == null) {
-          mediaPlayer.setCycleCount(AudioClip.INDEFINITE);
-          mediaPlayer.play(Double.MAX_VALUE);
-        } else {
-          mediaPlayer2.setCycleCount(AudioClip.INDEFINITE);
-          mediaPlayer2.play(Double.MAX_VALUE);
-        }
+        AudioClip player = mediaPlayer2 == null ? mediaPlayer : mediaPlayer2;
+        player.setCycleCount(AudioClip.INDEFINITE);
+        player.play(Double.MAX_VALUE);
       }
     });
     return mediaPlayer;

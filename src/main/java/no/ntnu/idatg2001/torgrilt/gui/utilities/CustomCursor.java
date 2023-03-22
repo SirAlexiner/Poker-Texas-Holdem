@@ -19,10 +19,7 @@ public class CustomCursor {
    * @param scene The scene to set the cursor for.
    */
   public static void setCustomCursor(Scene scene) {
-    if (FxManager.isDark()) {
-      scene.setCursor(new ImageCursor(new Image("cursors/cursor_white.png")));
-    } else {
-      scene.setCursor(new ImageCursor(new Image("cursors/cursor_black.png")));
-    }
+    scene.setCursor(FxManager.isDark() ? new ImageCursor(new Image("cursors/cursor_white.png"))
+        : new ImageCursor(new Image("cursors/cursor_black.png")));
   }
 }
