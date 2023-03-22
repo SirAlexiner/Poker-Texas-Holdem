@@ -17,8 +17,17 @@ import no.ntnu.idatg2001.torgrilt.gui.utilities.CustomCursor;
 import no.ntnu.idatg2001.torgrilt.gui.utilities.XmlSettings;
 import no.ntnu.idatg2001.torgrilt.io.github.siralexiner.fxmanager.FxManager;
 
+/**
+ * It creates a class called Settings.
+ */
 @UtilityClass
 public class Settings {
+  /**
+   * It creates a settings window that allows the user to mute sound, change the theme and the
+   * suit, and rank, of the splash screen card.
+   *
+   * @param stage The stage that the settings scene will be added to.
+   */
   public static void addSettingsScene(Stage stage) {
     String themeStr = null;
     String rankStr = null;
@@ -41,7 +50,7 @@ public class Settings {
 
     ComboBox<String> theme = new ComboBox<>();
     theme.setPromptText("Theme");
-    theme.setStyle("-fx-font-size: 20px;");
+    theme.setStyle(GlobalElements.getDefaultStyle());
     theme.setPrefWidth(GlobalElements.getButtonWidth());
     theme.getItems().add("Dark Mode");
     theme.getItems().add("Light Mode");
@@ -73,7 +82,7 @@ public class Settings {
 
     ComboBox<String> cardSuitSelect = new ComboBox<>();
     cardSuitSelect.setPromptText("Card Suit");
-    cardSuitSelect.setStyle("-fx-font-size: 20px;");
+    cardSuitSelect.setStyle(GlobalElements.getDefaultStyle());
     cardSuitSelect.setPrefWidth(GlobalElements.getButtonWidth());
     cardSuitSelect.getItems().add("Random");
     cardSuitSelect.getItems().add("Clubs");
@@ -84,7 +93,7 @@ public class Settings {
 
     ComboBox<String> cardRankSelect = new ComboBox<>();
     cardRankSelect.setPromptText("Card Suit");
-    cardRankSelect.setStyle("-fx-font-size: 20px;");
+    cardRankSelect.setStyle(GlobalElements.getDefaultStyle());
     cardRankSelect.setPrefWidth(GlobalElements.getButtonWidth());
     cardRankSelect.getItems().add("Random");
     cardRankSelect.getItems().add("Two");
@@ -121,11 +130,11 @@ public class Settings {
     });
 
     Label label = new Label("Splash Screen Card:");
-    label.setStyle("-fx-font-size: 20px;");
+    label.setStyle(GlobalElements.getDefaultStyle());
     label.setLabelFor(cardSuitSelect);
 
     Button goBack = new Button("Save and Go Back");
-    goBack.setStyle("-fx-font-size: 20px;");
+    goBack.setStyle(GlobalElements.getDefaultStyle());
     goBack.setPrefWidth(GlobalElements.getButtonWidth());
     goBack.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
 

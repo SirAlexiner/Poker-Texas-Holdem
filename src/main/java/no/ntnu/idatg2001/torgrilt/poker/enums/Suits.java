@@ -3,6 +3,10 @@ package no.ntnu.idatg2001.torgrilt.poker.enums;
 import java.util.stream.Stream;
 import lombok.Getter;
 
+/** An enum that contains all the possible suits in poker,
+ *  and the suit as an int starting at 0 for Clubs,
+ *  incrementing alphabetically.
+ */
 public enum Suits {
   CLUBS(0),
   DIAMONDS(1),

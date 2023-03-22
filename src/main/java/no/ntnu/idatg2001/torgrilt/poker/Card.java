@@ -4,6 +4,9 @@ import lombok.Getter;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Ranks;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Suits;
 
+/**
+ * A Card object has a suit and a rank, and can return the image file name for the card.
+ */
 public class Card {
   @Getter
   Suits suit;

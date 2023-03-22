@@ -19,6 +19,9 @@ import lombok.experimental.UtilityClass;
 import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
 import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
 
+/**
+ * It's a class that can be used to animate a sprite.
+ */
 @UtilityClass
 public class Animate {
 
@@ -26,6 +29,14 @@ public class Animate {
   private static AudioClip shufflePlayer;
   private static AudioClip dealPlayer;
 
+  /**
+   * "Show the board cards one by one, then show the all-in cards."
+   *
+   * <p>.
+   * The first thing we do is create a new `Timeline` object.
+   * This is a JavaFX object that allows us to create a sequence
+   * of events that will happen over time.
+   */
   public static void showBoard() {
     Timeline timeline = new Timeline();
     int turn = GlobalElements.getGameTurn();
@@ -86,17 +97,32 @@ public class Animate {
     return parallelTransition;
   }
 
+  /**
+   * "Play the deal audio, then draw the next three cards from the deck and add them to the flop."
+   *
+   * <p>.
+   * The first thing we do is create a new SequentialTransition object called flop.
+   * This is the object that will contain all the animations for the flop.
+   *
+   * @param deck The Group object that contains all the cards
+   */
   public static void flop(Group deck) {
     SequentialTransition flop = new SequentialTransition();
-    for (int i = 4; i < 7; i++) {
-      playDealAudio();
-      ParallelTransition draw = getParallelTransition(deck, i);
-
-      flop.getChildren().addAll(draw);
-    }
+    IntStream.range(4, 7)
+        .mapToObj(i -> getParallelTransition(deck, i))
+        .forEach(draw -> {
+          playDealAudio();
+          flop.getChildren().addAll(draw);
+        });
     flop.play();
   }
 
+  /**
+   * The turn function plays the deal audio, and then plays the parallel transition of the deck,
+   * which is the animation of the cards being dealt.
+   *
+   * @param deck The Group object that contains all the cards.
+   */
   public static void turn(Group deck) {
     int i = 7;
     playDealAudio();
@@ -107,6 +133,15 @@ public class Animate {
     turn.play();
   }
 
+  /**
+   * "Play the deal audio, then draw the next card from the deck and place it on the board."
+   *
+   * <p>.
+   * The first thing we do is set the number of cards to draw to 8.
+   * This is because we are drawing the river card.
+   *
+   * @param deck The Group that contains all the cards
+   */
   public static void river(Group deck) {
     int i = 8;
     playDealAudio();
@@ -117,6 +152,17 @@ public class Animate {
     river.play();
   }
 
+  /**
+   * "Rotate and move the player's cards and the opponent's cards to the center of the screen."
+   *
+   * <p>.
+   * The first thing we do is create a `RotateTransition` for the player's cards.
+   * We set the node to the player's cards,
+   * the axis to rotate around, and the angle to rotate to.
+   *
+   * @param player   The Group that contains the player's cards.
+   * @param opponent The Group that contains the opponent's cards.
+   */
   public static void showCards(Group player, Group opponent) {
     RotateTransition rotatePlayer = new RotateTransition(new Duration(500));
     rotatePlayer.setNode(player);
@@ -179,6 +225,18 @@ public class Animate {
   }
 
 
+  /**
+   * "Shuffle the deck by rotating it, then move each card to the left,
+   * then rotate it back and deal the cards."
+   *
+   * <p>.
+   * The first thing we do is create a `RotateTransition` called `skew`.
+   * This will rotate the deck 22.5 degrees around the Y axis.
+   * We then create another `RotateTransition` called `skewBack`
+   * that will rotate the deck back to 0 degrees.
+   *
+   * @param deck The deck of cards to be shuffled.
+   */
   public static void shuffle(Group deck) {
     RotateTransition skew = new RotateTransition(new Duration(250));
     skew.setNode(deck);
@@ -202,16 +260,23 @@ public class Animate {
       dealCards(deck);
     });
 
-    for (int i = 0; i < deck.getChildren().size(); i++) {
+    deck.getChildren().forEach(node -> {
       TranslateTransition move = new TranslateTransition(new Duration(250));
-      move.setNode(deck.getChildren().get(i));
+      move.setNode(node);
       move.setToX(-150);
       shuffle.getChildren().add(move);
-    }
+    });
     playShuffleAudio();
     shuffle.play();
   }
 
+  /**
+   * The function deals the cards by rotating the deck,
+   * then sliding the deck to the side, then sliding the cards out of
+   * the deck and into the hands of the players.
+   *
+   * @param deck The Group that contains the deck of cards
+   */
   public static void dealCards(Group deck) {
     deck.setManaged(false);
 
@@ -235,7 +300,7 @@ public class Animate {
     ParallelTransition parallel = new ParallelTransition(moveToSide, move);
     SequentialTransition slide = new SequentialTransition(place);
 
-    for (int i = 0; i < 4; i++) {
+    IntStream.range(0, 4).forEach(i -> {
       playDealAudio();
       RotateTransition rotateOne = new RotateTransition(new Duration(750));
       rotateOne.setNode(deck.getChildren().get(i));
@@ -245,11 +310,7 @@ public class Animate {
       TranslateTransition slideOne = new TranslateTransition(new Duration(500));
       slideOne.setNode(deck.getChildren().get(i));
       slideOne.setInterpolator(Interpolator.EASE_BOTH);
-      if (i == 1 || i == 3) {
-        slideOne.setToY(-750);
-      } else {
-        slideOne.setToY(750);
-      }
+      slideOne.setToY(i == 1 || i == 3 ? -750 : 750);
 
       ParallelTransition animateOne = new ParallelTransition(rotateOne, slideOne);
       animateOne.setInterpolator(Interpolator.EASE_BOTH);
@@ -257,7 +318,7 @@ public class Animate {
       if (i < 3) {
         animateOne.setOnFinished(event -> playDealAudio());
       }
-    }
+    });
 
     slide.play();
     slide.setOnFinished(event -> {
@@ -285,11 +346,11 @@ public class Animate {
     animateIn.play();
     animateIn.setOnFinished(event -> {
       stopDealAudio();
-      GameFloor.awakenAI();
+      GameFloor.awakenAi();
     });
   }
 
-  public static void stopDealAudio() {
+  private static void stopDealAudio() {
     if (dealPlayer != null && (dealPlayer.isPlaying())) {
       dealPlayer.stop();
     }

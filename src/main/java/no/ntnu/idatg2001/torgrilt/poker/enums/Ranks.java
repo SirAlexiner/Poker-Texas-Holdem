@@ -1,8 +1,10 @@
 package no.ntnu.idatg2001.torgrilt.poker.enums;
 
-import java.util.stream.Stream;
 import lombok.Getter;
 
+/** An enum that contains all the possible ranks in poker,
+ *  and the rank as an int starting at 0 for Two.
+ */
 public enum Ranks {
   TWO(0),
   THREE(1),

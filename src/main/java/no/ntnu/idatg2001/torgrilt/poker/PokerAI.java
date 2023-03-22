@@ -13,6 +13,9 @@ import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
 import no.ntnu.idatg2001.torgrilt.gui.scenes.GameFloor;
 import no.ntnu.idatg2001.torgrilt.gui.utilities.Animate;
 
+/**
+ * A class that is used to create a poker AI.
+ */
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 @UtilityClass
 public class PokerAI {
@@ -22,6 +25,19 @@ public class PokerAI {
   private boolean raiseMade;
   private double bet;
 
+  /**
+   * The AI will bet a certain amount based on the stage of the game,
+   * the strength of the hand,
+   * and the amount of money in the pot.
+   *
+   * @param stage The stage of the game.
+   * @param hand The hand of the AI
+   * @param bet the current bet
+   * @param stack the amount of money the AI has left
+   * @param raiseMade whether a raise has been made in the current round
+   * @param first boolean, true if it's the first round of betting
+   * @return The amount of money the AI is betting.
+   */
   public static double getBet(Stage stage, Card[] hand, double bet,
                            double stack, boolean raiseMade, boolean first) {
     PokerAI.stage = stage;
@@ -147,7 +163,7 @@ public class PokerAI {
     Tooltip tooltip = new Tooltip(text);
     tooltip.show(stage);
 
-    PauseTransition aiThink = new PauseTransition(new Duration(2500));
+    PauseTransition aiThink = new PauseTransition(new Duration(1500));
     aiThink.setOnFinished(event -> tooltip.hide());
     aiThink.play();
   }

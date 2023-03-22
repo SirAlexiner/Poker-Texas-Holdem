@@ -2,6 +2,7 @@ package no.ntnu.idatg2001.torgrilt.poker.enums;
 
 import lombok.Getter;
 
+/** An enum that contains all the possible hands in poker, and their score. */
 public enum Hands {
   HIGH_CARD(0.0),
   ONE_PAIR(20.0),

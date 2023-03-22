@@ -3,7 +3,8 @@ package no.ntnu.idatg2001.torgrilt.poker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,9 @@ import no.ntnu.idatg2001.torgrilt.poker.enums.Hands;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Ranks;
 import no.ntnu.idatg2001.torgrilt.poker.enums.Suits;
 
+/**
+ * A class that represents a poker game.
+ */
 @UtilityClass
 public class Poker {
   @Getter
@@ -23,6 +27,13 @@ public class Poker {
   @Setter
   private double playerPot = GlobalElements.getDefaultStartingPot();
 
+  /**
+   * > The hand strength is the hand type score plus the highest card rank,
+   * plus the next highest card rank divided by 10.
+   *
+   * @param hand The hand to be evaluated
+   * @return The hand strength is being returned.
+   */
   public static double getHandStrength(Card[] hand) {
     Hands handType = getHand(hand);
     double strength = handType.getHandScore();
@@ -48,6 +59,14 @@ public class Poker {
     return strength;
   }
 
+  /**
+   * We create two arrays, one for the rank and one for the suit.
+   * We then iterate through the hand and the board (if it exists),
+   * and increment the appropriate index in the array.
+   *
+   * @param hand The hand you want to check
+   * @return The hand enum
+   */
   public static Hands getHand(Card[] hand) {
     int[] rank = new int[13];
     int[] suit = new int[4];
@@ -73,14 +92,14 @@ public class Poker {
     if (GameFloor.getBoard() != null) {
       GameFloor.getBoard().forEach(card -> rank[card.getRank().getRankInt()]++);
     }
-    for (int i = 1; i < rank.length; i++) {
-      if (rank[i] != maxIndex && rank[i] > rank[nextMaxIndex]
-          || (rank[i] == rank[nextMaxIndex] && i > nextMaxIndex && i < maxIndex)) {
-        nextMaxIndex = i;
-      }
-    }
-
-    return nextMaxIndex;
+    return IntStream.range(1, rank.length).filter(i ->
+            rank[i] != maxIndex
+                && rank[i] > rank[nextMaxIndex]
+                || (rank[i] == rank[nextMaxIndex]
+                && i > nextMaxIndex
+                && i < maxIndex))
+        .findFirst()
+        .orElse(nextMaxIndex);
   }
 
   private static int getHighest(Card[] hand) {
@@ -90,13 +109,12 @@ public class Poker {
       GameFloor.getBoard().forEach(card -> rank[card.getRank().getRankInt()]++);
     }
     int maxIndex = 0;
-    for (int i = 1; i < rank.length; i++) {
-      if (rank[i] > rank[maxIndex] || (rank[i] == rank[maxIndex] && i > maxIndex)) {
-        maxIndex = i;
-      }
-    }
-
-    return maxIndex * 2;
+    return IntStream.range(1, rank.length).filter(i ->
+            rank[i] > rank[maxIndex]
+                || (rank[i] == rank[maxIndex]
+                && i > maxIndex))
+        .findFirst()
+        .orElse(maxIndex) * 2;
   }
 
   private static Hands getHandEnum(int[] rank, int[] suit, Card[] hand) {
@@ -136,57 +154,27 @@ public class Poker {
 
   private static boolean isRoyal(Card[] hand) {
     ArrayList<Card> boardHand = new ArrayList<>();
-
     boardHand.addAll(GameFloor.getBoard());
     boardHand.addAll(Arrays.asList(hand));
-
-    // Sort the cards on the board and on hand by suit
     EnumMap<Suits, ArrayList<Card>> suitMap = getSuitMap(boardHand);
-
-    // check if any suit has 5 or more cards in consecutive order from Ten to Ace
-    boolean isRoyalFlush = false;
-    for (Map.Entry<Suits, ArrayList<Card>> entry : suitMap.entrySet()) {
-      Suits countedSuit = entry.getKey();
-      ArrayList<Card> suitCards = entry.getValue();
-      if (suitCards.size() >= 5 && isRoyalAndFlush(countedSuit, suitCards)) {
-        isRoyalFlush = true;
-      }
-    }
-    return isRoyalFlush;
+    return suitMap.entrySet().stream()
+        .filter(entry -> entry.getValue().size() >= 5)
+        .anyMatch(entry -> isRoyalAndFlush(entry.getKey(), entry.getValue()));
   }
 
   private static boolean isRoyalAndFlush(Suits countedSuit, ArrayList<Card> suitCards) {
-    int suitCount = 0;
-    for (Card suitCard : suitCards) {
-      Ranks rank = suitCard.getRank();
-      Suits suit = suitCard.getSuit();
-      if (rank.equals(Ranks.TEN) && suit.equals(countedSuit)
-          || rank.equals(Ranks.JACK) && suit.equals(countedSuit)
-          || rank.equals(Ranks.QUEEN) && suit.equals(countedSuit)
-          || rank.equals(Ranks.KING) && suit.equals(countedSuit)
-          || rank.equals(Ranks.ACE) && suit.equals(countedSuit)) {
-        suitCount++;
-      } else {
-        suitCount = 0;
-      }
-    }
-    return suitCount == 5;
+    return suitCards.stream().filter(card -> card.getSuit().equals(countedSuit))
+        .map(Card::getRank)
+        .distinct()
+        .sorted()
+        .toList()
+        .equals(Arrays.asList(Ranks.TEN, Ranks.JACK, Ranks.QUEEN, Ranks.KING, Ranks.ACE));
   }
 
-  private static EnumMap<Suits, ArrayList<Card>> getSuitMap(
-      ArrayList<Card> boardHand) {
-    EnumMap<Suits, ArrayList<Card>> suitMap = new EnumMap<>(Suits.class);
-    for (Card card : boardHand) {
-      Suits suit = card.getSuit();
-      if (suitMap.containsKey(suit)) {
-        suitMap.get(suit).add(card);
-      } else {
-        ArrayList<Card> suitCards = new ArrayList<>();
-        suitCards.add(card);
-        suitMap.put(suit, suitCards);
-      }
-    }
-    return suitMap;
+  private static EnumMap<Suits, ArrayList<Card>> getSuitMap(ArrayList<Card> boardHand) {
+    return boardHand.stream()
+        .collect(Collectors.groupingBy(Card::getSuit, () -> new EnumMap<>(Suits.class),
+            Collectors.toCollection(ArrayList::new)));
   }
 
   private static boolean isStraightFlush(int[] suit, Card[] hand) {
@@ -208,17 +196,8 @@ public class Poker {
   }
 
   private static Hands isFullHouse(int[] arr) {
-    int house = 0;
-    for (int j : arr) {
-      if (j >= 2) {
-        house++;
-      }
-    }
-    if (house >= 2) {
-      return Hands.FULL_HOUSE;
-    } else {
-      return Hands.THREE_OF_A_KIND;
-    }
+    int house = (int) Arrays.stream(arr).filter(i -> i >= 2).count();
+    return house >= 2 ? Hands.FULL_HOUSE : Hands.THREE_OF_A_KIND;
   }
 
   private static boolean isFlush(int[] suit) {
@@ -226,18 +205,14 @@ public class Poker {
   }
 
   private static boolean isStraight(int[] rank) {
-    int currentNum = 1;
-    int count = 0;
-    for (int j : rank) {
-      if (j >= currentNum) {
-        count++;
-        if (count >= 5) {
-          return true;
-        }
-      } else {
-        count = 0;
+    AtomicInteger count = new AtomicInteger();
+    Arrays.stream(rank).forEach(i -> {
+      if (i >= 1) {
+        count.getAndIncrement();
+      } else if (count.get() < 5) {
+        count.set(0);
       }
-    }
-    return false;
+    });
+    return count.get() >= 5;
   }
 }

@@ -51,6 +51,9 @@ import no.ntnu.idatg2001.torgrilt.poker.DeckOfCards;
 import no.ntnu.idatg2001.torgrilt.poker.Poker;
 import no.ntnu.idatg2001.torgrilt.poker.PokerAI;
 
+/**
+ * It creates a class called GameFloor.
+ */
 @UtilityClass
 public class GameFloor {
   private Scene singleInstance = null;
@@ -73,36 +76,48 @@ public class GameFloor {
   private VBox sideButtons;
   @Getter
   private StackPane player;
-
   @Getter
   @Setter
   private ArrayList<Card> board = new ArrayList<>();
   private Stage stage;
-
   private Button raise;
   private Button call;
   private Button check;
   private Button fold;
   @Getter
   private ArrayList<Card> drawnCards;
-
   private boolean playerChecked;
   private boolean aiChecked;
-
   private Tooltip tooltip;
+  private final String allIn = "All In";
+  private final String audioRaiseString = "src/main/resources/audio/raise.mp3";
+  private final String audioCallString = "src/main/resources/audio/call.mp3";
 
-  public Scene getGamescene(Stage stage) {
+  /**
+   * If the singleInstance variable is null,
+   * then create a new game scene and assign it to the singleInstance variable.
+   * Otherwise, return the singleInstance variable
+   *
+   * @param stage The stage that the scene will be displayed on.
+   * @return A Scene object.
+   */
+  public Scene getGameScene(Stage stage) {
     if (singleInstance == null) {
       singleInstance = createGameScene(stage);
     }
     return singleInstance;
   }
 
+  /**
+   * It creates the game scene.
+   *
+   * @param stage The stage that the scene is being added to.
+   * @return A scene is being returned.
+   */
   private Scene createGameScene(Stage stage) {
     GameFloor.stage = stage;
 
     DeckOfCards deck = new DeckOfCards();
-    deck.shuffle();
 
     drawnCards = (ArrayList<Card>) deck.draw(12);
     deckOfCard = Card3D.getDeck(drawnCards);
@@ -139,7 +154,7 @@ public class GameFloor {
     setStylePot(turnPot, STATE_ACCENT);
 
     Button rules = new Button("Rules");
-    rules.setStyle("-fx-font-size: 20px;");
+    rules.setStyle(GlobalElements.getDefaultStyle());
     rules.setPrefWidth(GlobalElements.getButtonWidth() * 0.75);
     rules.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
     rules.setOnMouseClicked(event -> {
@@ -148,14 +163,14 @@ public class GameFloor {
     });
 
     Button settings = new Button("Settings");
-    settings.setStyle("-fx-font-size: 20px;");
+    settings.setStyle(GlobalElements.getDefaultStyle());
     settings.setPrefWidth(GlobalElements.getButtonWidth() * 0.75);
     settings.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
 
     settings.setOnAction(event -> Settings.addSettingsScene(stage));
 
     Button exitGame = new Button("Exit Game");
-    exitGame.setStyle("-fx-font-size: 20px;");
+    exitGame.setStyle(GlobalElements.getDefaultStyle());
     exitGame.setPrefWidth(GlobalElements.getButtonWidth() * 0.75);
     exitGame.getStyleClass().addAll(Styles.DANGER, Styles.BUTTON_OUTLINED);
     exitGame.setOnAction(event -> System.exit(0));
@@ -166,13 +181,12 @@ public class GameFloor {
     sideButtons.setPadding(new Insets(0, 0, 0, 15));
 
     raise = new Button("Raise");
-    raise.setStyle("-fx-font-size: 20px;");
+    raise.setStyle(GlobalElements.getDefaultStyle());
     raise.setPrefWidth(GlobalElements.getButtonWidth() / 2);
     raise.getStyleClass().addAll(Styles.SUCCESS, Styles.BUTTON_OUTLINED);
     raise.setDisable(true);
     raise.setOnMouseClicked(event -> {
-      String raiseAudio = "src/main/resources/audio/raise.mp3";
-      AudioClip raisePlayer = new AudioClip(new File(raiseAudio).toURI().toString());
+      AudioClip raisePlayer = new AudioClip(new File(audioRaiseString).toURI().toString());
       if (!MainMenu.getMuteButton().isSelected()) {
         raisePlayer.play();
       }
@@ -194,70 +208,32 @@ public class GameFloor {
           GameFloor.allIn();
         }
       } else {
-        PauseTransition aiThink = new PauseTransition(new Duration(5000));
-        aiThink.setOnFinished(event1 -> {
-          Card[] cards = new Card[] {opponentCardOne, opponentCardTwo};
-          double opponentBet =
-              PokerAI.getBet(stage, cards, GlobalElements.getPreviousBet(),
-                  Poker.getOpponentPot(),
-                  true, false);
-          turnPot.setDouble(turnPot.getDouble() + opponentBet);
-          Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
-          opponentPot.setDouble(Poker.getOpponentPot());
-        });
-        aiThink.play();
+        runAi(stage, GlobalElements.getPreviousBet(), true, false);
       }
     });
 
     check = new Button("Check");
-    check.setStyle("-fx-font-size: 20px;");
+    check.setStyle(GlobalElements.getDefaultStyle());
     check.setPrefWidth(GlobalElements.getButtonWidth() / 2);
     check.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
     check.setDisable(true);
     check.setOnAction(event -> {
-      String s = "src/main/resources/audio/call.mp3";
-      AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
-      if (!MainMenu.getMuteButton().isSelected()) {
-        raisePlayer.play();
-      }
-      raise.setDisable(true);
-      call.setDisable(true);
-      check.setDisable(true);
-      fold.setDisable(true);
+      playRaiseAndDisablePlayerButtons(audioCallString);
       if (aiChecked) {
         nextTurn(false);
       } else {
         playerChecked = true;
-        PauseTransition aiThink = new PauseTransition(new Duration(5000));
-        aiThink.setOnFinished(event1 -> {
-          Card[] cards = new Card[] {opponentCardOne, opponentCardTwo};
-          double opponentBet =
-              PokerAI.getBet(stage, cards, 0,
-                  Poker.getOpponentPot(),
-                  false, false);
-          turnPot.setDouble(turnPot.getDouble() + opponentBet);
-          Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
-          opponentPot.setDouble(Poker.getOpponentPot());
-        });
-        aiThink.play();
+        runAi(stage, 0, false, false);
       }
     });
 
     call = new Button("Call");
-    call.setStyle("-fx-font-size: 20px;");
+    call.setStyle(GlobalElements.getDefaultStyle());
     call.setPrefWidth(GlobalElements.getButtonWidth() / 2);
     call.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
     call.setDisable(true);
     call.setOnAction(event -> {
-      String s = "src/main/resources/audio/call.mp3";
-      AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
-      if (!MainMenu.getMuteButton().isSelected()) {
-        raisePlayer.play();
-      }
-      raise.setDisable(true);
-      call.setDisable(true);
-      check.setDisable(true);
-      fold.setDisable(true);
+      playRaiseAndDisablePlayerButtons(audioCallString);
 
       turnPot.setDouble(turnPot.getDouble() + GlobalElements.getPreviousBet());
       Poker.setPlayerPot(Poker.getPlayerPot() - GlobalElements.getPreviousBet());
@@ -267,21 +243,13 @@ public class GameFloor {
     });
 
     fold = new Button("Fold");
-    fold.setStyle("-fx-font-size: 20px;");
+    fold.setStyle(GlobalElements.getDefaultStyle());
     fold.setPrefWidth(GlobalElements.getButtonWidth() / 2);
     fold.getStyleClass().addAll(Styles.DANGER, Styles.BUTTON_OUTLINED);
     fold.setDisable(true);
     fold.setOnAction(event -> {
       String s = "src/main/resources/audio/userFold.mp3";
-      AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
-      if (!MainMenu.getMuteButton().isSelected()) {
-        raisePlayer.play();
-      }
-
-      raise.setDisable(true);
-      call.setDisable(true);
-      check.setDisable(true);
-      fold.setDisable(true);
+      playRaiseAndDisablePlayerButtons(s);
 
       Poker.setOpponentPot(Poker.getOpponentPot() + turnPot.getDouble());
       opponentPot.setDouble(Poker.getOpponentPot());
@@ -370,6 +338,41 @@ public class GameFloor {
     return scene;
   }
 
+  private void runAi(Stage stage, double bet, boolean raise, boolean firstTurn) {
+    PauseTransition aiThink = new PauseTransition(new Duration(1500));
+    aiThink.setOnFinished(event1 -> {
+      Card[] cards = new Card[]{opponentCardOne, opponentCardTwo};
+      double opponentBet =
+          PokerAI.getBet(stage, cards, bet,
+              Poker.getOpponentPot(),
+              raise, firstTurn);
+      turnPot.setDouble(turnPot.getDouble() + opponentBet);
+      Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
+      opponentPot.setDouble(Poker.getOpponentPot());
+    });
+    aiThink.play();
+  }
+
+  private void playRaiseAndDisablePlayerButtons(String audioCallString) {
+    AudioClip raisePlayer = new AudioClip(new File(audioCallString).toURI().toString());
+    if (!MainMenu.getMuteButton().isSelected()) {
+      raisePlayer.play();
+    }
+    raise.setDisable(true);
+    call.setDisable(true);
+    check.setDisable(true);
+    fold.setDisable(true);
+  }
+
+  /**
+   * If the user clicks the "New Game" button,
+   * the program will ask the user if they want to start a new game. If the user
+   * clicks "OK", the program will start a new game.
+   * If the user clicks "Cancel", the program will ask the user if they
+   * want to exit the game.
+   * If the user clicks "OK", the program will exit. If the user clicks "Cancel", the program will
+   * ask the user if they want to start a new game.
+   */
   public static void newGame() {
     if (tooltip != null) {
       tooltip.hide();
@@ -384,38 +387,32 @@ public class GameFloor {
     if (result.isPresent() && result.get() == ButtonType.OK) {
       Poker.setOpponentPot(GlobalElements.getDefaultStartingPot());
       Poker.setPlayerPot(GlobalElements.getDefaultStartingPot());
-      board.clear();
-      GlobalElements.setRestarted(true);
-      Scene tempInstance = getGamescene(stage);
-      singleInstance = createGameScene(stage);
-      StackPane root = (StackPane) stage.getScene().getRoot();
-      root.getChildren().add(singleInstance.getRoot());
-      root.getChildren().remove(tempInstance.getRoot());
+      refreshGameBoard();
     } else {
-      Alert exit = new Alert(Alert.AlertType.CONFIRMATION);
-      exit.initModality(Modality.APPLICATION_MODAL);
-      exit.initOwner(stage.getScene().getWindow());
-      exit.setHeaderText("Exit Game?");
-      exit.setContentText("Do you want to exit the game?");
-      Optional<ButtonType> exitResult = exit.showAndWait();
-      if (exitResult.isPresent() && exitResult.get() == ButtonType.OK) {
-        System.exit(0);
-      } else {
-        newGame();
-      }
+      exitGameAlert();
     }
+  }
+
+  private static void refreshGameBoard() {
+    board.clear();
+    GlobalElements.setRestarted(true);
+    Scene tempInstance = getGameScene(stage);
+    singleInstance = createGameScene(stage);
+    StackPane root = (StackPane) stage.getScene().getRoot();
+    root.getChildren().add(singleInstance.getRoot());
+    root.getChildren().remove(tempInstance.getRoot());
   }
 
   private static void setStylePot(TextField playerPot, PseudoClass stateSuccess) {
     playerPot.setAlignment(Pos.CENTER);
-    playerPot.setStyle("-fx-font-size: 20px;");
+    playerPot.setStyle(GlobalElements.getDefaultStyle());
     playerPot.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ROUNDED);
     playerPot.pseudoClassStateChanged(stateSuccess, true);
     playerPot.setDisable(true);
     playerPot.setOpacity(1);
   }
 
-  public void newTurn() {
+  private void newTurn() {
     GlobalElements.setGameTurn(0);
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.initModality(Modality.APPLICATION_MODAL);
@@ -424,55 +421,59 @@ public class GameFloor {
     alert.setContentText("Do you want to continue playing another round?");
     Optional<ButtonType> newTurnResult = alert.showAndWait();
     if (newTurnResult.isPresent() && newTurnResult.get() == ButtonType.OK) {
-      board.clear();
-      GlobalElements.setRestarted(true);
-      Scene tempInstance = getGamescene(stage);
-      singleInstance = createGameScene(stage);
-      StackPane root = (StackPane) stage.getScene().getRoot();
-      root.getChildren().add(singleInstance.getRoot());
-      root.getChildren().remove(tempInstance.getRoot());
+      refreshGameBoard();
     } else {
-      Alert exit = new Alert(Alert.AlertType.CONFIRMATION);
-      exit.initModality(Modality.APPLICATION_MODAL);
-      exit.initOwner(stage.getScene().getWindow());
-      exit.setHeaderText("Exit Game?");
-      exit.setContentText("Do you want to exit the game?");
-      Optional<ButtonType> exitResult = exit.showAndWait();
-      if (exitResult.isPresent() && exitResult.get() == ButtonType.OK) {
-        System.exit(0);
-      } else {
-        newTurn();
-      }
+      exitGameAlert();
     }
   }
 
+  private void exitGameAlert() {
+    Alert exit = new Alert(Alert.AlertType.CONFIRMATION);
+    exit.initModality(Modality.APPLICATION_MODAL);
+    exit.initOwner(stage.getScene().getWindow());
+    exit.setHeaderText("Exit Game?");
+    exit.setContentText("Do you want to exit the game?");
+    Optional<ButtonType> exitResult = exit.showAndWait();
+    if (exitResult.isPresent() && exitResult.get() == ButtonType.OK) {
+      System.exit(0);
+    } else {
+      newTurn();
+    }
+  }
+
+  /**
+   * This function is called when the AI player goes all in.
+   * It plays a sound effect and disables all the buttons.
+   */
   public void aiAllIn() {
-    String s = "src/main/resources/audio/raise.mp3";
-    AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
-    if (!MainMenu.getMuteButton().isSelected()) {
-      raisePlayer.play();
-    }
-    raise.setDisable(true);
-    call.setDisable(true);
-    check.setDisable(true);
-    fold.setDisable(true);
+    playRaiseAndDisablePlayerButtons(audioRaiseString);
   }
 
+  /**
+   * If the player's pot is greater than the previous bet,
+   * and the maximum of the player's pot and the previous bet times
+   * two is equal to the previous bet times two,
+   * then the raise button is set to allIn, and the raise, call, and fold
+   * buttons are enabled. Otherwise,
+   * if the player's pot is less than or equal to the previous bet, then the raise button
+   * is set to allIn,
+   * and the raise and fold buttons are enabled.
+   * Otherwise, the raise, call, and fold buttons are enabled.
+   */
   public void aiRaised() {
-    String s = "src/main/resources/audio/raise.mp3";
-    AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
+    AudioClip raisePlayer = new AudioClip(new File(audioRaiseString).toURI().toString());
     if (!MainMenu.getMuteButton().isSelected()) {
       raisePlayer.play();
     }
     if (Poker.getPlayerPot() > GlobalElements.getPreviousBet()
         && Math.max(Poker.getPlayerPot(), GlobalElements.getPreviousBet() * 2)
-            == GlobalElements.getPreviousBet() * 2) {
-      raise.setText("All In");
+        == GlobalElements.getPreviousBet() * 2) {
+      raise.setText(allIn);
       raise.setDisable(false);
       call.setDisable(false);
       fold.setDisable(false);
     } else if (Poker.getPlayerPot() <= GlobalElements.getPreviousBet()) {
-      raise.setText("All In");
+      raise.setText(allIn);
       raise.setDisable(false);
       fold.setDisable(false);
     } else {
@@ -482,9 +483,15 @@ public class GameFloor {
     }
   }
 
+  /**
+   * If the AI checks, then if the player has checked, then the next turn is called,
+   * otherwise the AI has checked and the
+   * player can raise, check, or fold.
+   *
+   * @param checked boolean, true if the AI called, false if the AI raised
+   */
   public void aiCalledChecked(boolean checked) {
-    String s = "src/main/resources/audio/call.mp3";
-    AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
+    AudioClip raisePlayer = new AudioClip(new File(audioCallString).toURI().toString());
     if (!MainMenu.getMuteButton().isSelected()) {
       raisePlayer.play();
     }
@@ -502,6 +509,9 @@ public class GameFloor {
     }
   }
 
+  /**
+   * When the AI folds, play a sound, add the turn pot to the player's pot, and start a new turn.
+   */
   public void aiFolded() {
     String s = "src/main/resources/audio/aiFold.mp3";
     AudioClip raisePlayer = new AudioClip(new File(s).toURI().toString());
@@ -514,6 +524,9 @@ public class GameFloor {
     Platform.runLater(GameFloor::newTurn);
   }
 
+  /**
+   * Make sure the board has five cards, then set the turn to 3 and call nextTurn.
+   */
   public static void allIn() {
     switch (board.size()) {
       case 0 -> {
@@ -559,6 +572,12 @@ public class GameFloor {
     }
   }
 
+  /**
+   * Based on the current turn add the cards for that turn, animate the board,
+   * update the gameTurn and call whoGoes.
+   *
+   * @param aiCalled boolean to determine if the aiCalled the players raise.
+   */
   public static void nextTurn(boolean aiCalled) {
     playerChecked = false;
     aiChecked = false;
@@ -622,41 +641,21 @@ public class GameFloor {
           == Poker.getPlayerPot()
           || Math.min(Poker.getPlayerPot(), GlobalElements.getPreviousBet() * 2)
           == Poker.getPlayerPot()) {
-        raise.setText("All In");
+        raise.setText(allIn);
       }
       raise.setDisable(false);
       check.setDisable(false);
       fold.setDisable(false);
     } else {
-      PauseTransition aiThink = new PauseTransition(new Duration(5000));
-      aiThink.setOnFinished(event1 -> {
-        Card[] cards = new Card[] {opponentCardOne, opponentCardTwo};
-        double opponentBet =
-            PokerAI.getBet(stage, cards, 0,
-                Poker.getOpponentPot(),
-                false, false);
-        turnPot.setDouble(turnPot.getDouble() + opponentBet);
-        Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
-        opponentPot.setDouble(Poker.getOpponentPot());
-      });
-      aiThink.play();
+      runAi(stage, 0, false, false);
     }
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-  public void awakenAI() {
-    PauseTransition aiThink = new PauseTransition(new Duration(2500));
-    aiThink.setOnFinished(event -> {
-      Card[] cards = {opponentCardOne, opponentCardTwo};
-      double opponentBet =
-          PokerAI.getBet(stage, cards, 0,
-              Poker.getOpponentPot(), false, true);
-      turnPot.setDouble(turnPot.getDouble() + opponentBet);
-      Poker.setOpponentPot(Poker.getOpponentPot() - opponentBet);
-      opponentPot.setDouble(Poker.getOpponentPot());
-      GlobalElements.setPreviousBet(opponentBet);
-    });
-    aiThink.play();
+  /**
+   * The AI waits 2.5 seconds, then makes a bet.
+   */
+  public void awakenAi() {
+    runAi(stage, 0, false, true);
   }
 
   private void updateWidthConstraints(double width) {

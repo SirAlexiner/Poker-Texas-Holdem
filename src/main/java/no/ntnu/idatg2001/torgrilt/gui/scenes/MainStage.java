@@ -15,6 +15,11 @@ import no.ntnu.idatg2001.torgrilt.gui.globalelements.GlobalElements;
 import no.ntnu.idatg2001.torgrilt.gui.utilities.CustomCursor;
 import no.ntnu.idatg2001.torgrilt.io.github.siralexiner.fxmanager.FxManager;
 
+/**
+ * It's the main class of the application,
+ * it sets up the stage and scene, and it's the class that is called when the
+ * application is launched.
+ */
 public class MainStage extends Application {
 
   private static final AmbientLight ambientLight = new AmbientLight(Color.WHITE.darker());
@@ -36,7 +41,7 @@ public class MainStage extends Application {
 
 
     StackPane root = new StackPane(
-        GameFloor.getGamescene(stage).getRoot(),
+        GameFloor.getGameScene(stage).getRoot(),
         MainMenu.getMainMenu(stage).getRoot()
     );
     root.setDepthTest(DepthTest.DISABLE);

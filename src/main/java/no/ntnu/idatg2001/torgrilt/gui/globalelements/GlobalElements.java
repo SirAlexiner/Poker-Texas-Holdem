@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
 
+/**
+ * It's a class that holds all the global variables that are used throughout the program.
+ */
 @UtilityClass
 public class GlobalElements {
   @Getter
@@ -16,9 +19,9 @@ public class GlobalElements {
   private final double cardDepth = 4;
   @Getter
   private final double buttonWidth = 200;
-
+  @Getter
+  private final String defaultStyle = "-fx-font-size: 20px;";
   private final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
   @Getter
   private final double sceneWidth = screenSize.getWidth();
   @Getter

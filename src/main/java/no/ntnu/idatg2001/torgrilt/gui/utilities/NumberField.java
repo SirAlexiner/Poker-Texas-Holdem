@@ -7,10 +7,14 @@ import java.text.ParseException;
 import java.util.Locale;
 import javafx.scene.control.TextField;
 
+/**
+ * It's a TextField that only accepts valid double values.
+ */
 public class NumberField extends TextField {
 
   private final DecimalFormat decimalFormat;
 
+  /** A constructor that takes a double value as a parameter. */
   public NumberField(Double value) {
     super();
     decimalFormat = new DecimalFormat("#,##0.00 $", new DecimalFormatSymbols(Locale.US));
@@ -25,6 +29,11 @@ public class NumberField extends TextField {
     setText(decimalFormat.format(value));
   }
 
+  /**
+   * If the text is valid, parse it as a BigDecimal and return the double value of that BigDecimal.
+   *
+   * @return A double value.
+   */
   public double getDouble() {
     String value = getText();
     if (isValid(value)) {

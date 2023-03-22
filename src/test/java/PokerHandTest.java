@@ -48,7 +48,6 @@ class PokerHandTest {
   @BeforeEach
   void setUp() {
     deck = new DeckOfCards();
-    deck.shuffle();
 
     hands.add(highCard);
     hands.add(pair);

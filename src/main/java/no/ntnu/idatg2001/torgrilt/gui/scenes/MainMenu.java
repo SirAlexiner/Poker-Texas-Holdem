@@ -31,6 +31,9 @@ import no.ntnu.idatg2001.torgrilt.gui.utilities.XmlSettings;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+/**
+ * It creates a class called MainMenu.
+ */
 @UtilityClass
 public class MainMenu {
   @Getter
@@ -44,6 +47,12 @@ public class MainMenu {
   private AudioClip mediaPlayer2;
 
 
+  /**
+   * It creates a scene with a 3D card, a logo, and a few buttons.
+   *
+   * @param stage The stage that the scene will be added to.
+   * @return A scene object.
+   */
   public static Scene getMainMenu(Stage stage) {
     card = Card3D.getSplashCard(stage);
     Card3D.animate3dCard(card);
@@ -51,7 +60,7 @@ public class MainMenu {
     // Create a ToggleButton with no text
     muteButton = new ToggleButton("", new FontIcon(Feather.VOLUME_2));
     muteButton.getStyleClass().addAll(Styles.DANGER);
-    muteButton.setStyle("-fx-font-size: 20px;");
+    muteButton.setStyle(GlobalElements.getDefaultStyle());
 
     try {
       String settingMuted = XmlSettings.getSettingMuted();
@@ -69,7 +78,7 @@ public class MainMenu {
     muteBox.setAlignment(Pos.CENTER);
 
     Button startGame = new Button("START GAME");
-    startGame.setStyle("-fx-font-size: 20px;");
+    startGame.setStyle(GlobalElements.getDefaultStyle());
     startGame.setPrefWidth(GlobalElements.getButtonWidth());
     startGame.getStyleClass().addAll(Styles.SUCCESS, Styles.BUTTON_OUTLINED);
     Timer timer = new Timer(500, e -> Card3D.setAnimationSpeed(1));
@@ -88,7 +97,7 @@ public class MainMenu {
     });
 
     Button rules = new Button("RULES");
-    rules.setStyle("-fx-font-size: 20px;");
+    rules.setStyle(GlobalElements.getDefaultStyle());
     rules.setPrefWidth(GlobalElements.getButtonWidth());
     rules.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
     menuHoverAudio(shotPlayer, rules);
@@ -98,14 +107,14 @@ public class MainMenu {
     });
 
     Button exit = new Button("EXIT GAME");
-    exit.setStyle("-fx-font-size: 20px;");
+    exit.setStyle(GlobalElements.getDefaultStyle());
     exit.setPrefWidth(GlobalElements.getButtonWidth());
     exit.getStyleClass().addAll(Styles.DANGER, Styles.BUTTON_OUTLINED);
     menuHoverAudio(shotPlayer, exit);
     exit.setOnMouseClicked(mouseEvent -> System.exit(0));
 
     Button settings = new Button("SETTINGS");
-    settings.setStyle("-fx-font-size: 20px;");
+    settings.setStyle(GlobalElements.getDefaultStyle());
     settings.setPrefWidth(GlobalElements.getButtonWidth());
     settings.getStyleClass().addAll(Styles.BUTTON_OUTLINED);
     menuHoverAudio(shotPlayer, settings);

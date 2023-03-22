@@ -18,8 +18,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+/**
+ * > This class is used to read and write settings to an XML file.
+ */
 @UtilityClass
 public class XmlSettings {
+  /**
+   * > This function returns the value of the `Muted` element in the `Settings.xml` file.
+   *
+   * @return The value of the Muted element in the XML file.
+   */
   public static String getSettingMuted()
       throws ParserConfigurationException, SAXException, IOException {
     // Create a new DocumentBuilderFactory instance
@@ -28,6 +36,11 @@ public class XmlSettings {
     return rootElement.getElementsByTagName("Muted").item(0).getTextContent();
   }
 
+  /**
+   * > This function returns the value of the `Theme` element in the `Settings.xml` file.
+   *
+   * @return The theme of the application.
+   */
   public static String getSettingTheme()
       throws ParserConfigurationException, SAXException, IOException {
     // Create a new DocumentBuilderFactory instance
@@ -36,6 +49,11 @@ public class XmlSettings {
     return rootElement.getElementsByTagName("Theme").item(0).getTextContent();
   }
 
+  /**
+   * > This function returns the suit of the splash card.
+   *
+   * @return The suit of the splash card.
+   */
   public static String getSplashCardSuit()
       throws ParserConfigurationException, SAXException, IOException {
     // Create a new DocumentBuilderFactory instance
@@ -44,6 +62,11 @@ public class XmlSettings {
     return rootElement.getElementsByTagName("Suit").item(0).getTextContent();
   }
 
+  /**
+   * > This function returns the rank of the splash card.
+   *
+   * @return The rank of the card.
+   */
   public static String getSplashCardRank()
       throws ParserConfigurationException, SAXException, IOException {
     Element rootElement = getXmlElement();
@@ -66,6 +89,13 @@ public class XmlSettings {
     return document.getDocumentElement();
   }
 
+  /**
+   * It creates a new XML file and writes the settings to it.
+   *
+   * @param theme The theme that the user has selected
+   * @param cardSuitSelect The ComboBox that contains the card suits
+   * @param cardRankSelect The ComboBox that contains the card ranks
+   */
   public static void saveToXmlSettings(ComboBox<String> theme,
                                        ComboBox<String> cardSuitSelect,
                                        ComboBox<String> cardRankSelect)
@@ -108,11 +138,10 @@ public class XmlSettings {
         document.createTextNode(cardRankSelect.getSelectionModel().getSelectedItem()));
     cardElement.appendChild(cardRankElement);
 
-    // Create a new TransformerFactory instance
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
-    // Create a new Transformer instance
+    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
     Transformer transformer = transformerFactory.newTransformer();
-    // Create a new DOMSource instance with the document
     DOMSource source = new DOMSource(document);
 
     // Create a new StreamResult instance with the file path

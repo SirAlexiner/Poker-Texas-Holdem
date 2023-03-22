@@ -2,6 +2,7 @@ package no.ntnu.idatg2001.torgrilt.gui.elements3d;
 
 import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
@@ -22,6 +23,9 @@ import no.ntnu.idatg2001.torgrilt.gui.scenes.MainMenu;
 import no.ntnu.idatg2001.torgrilt.gui.utilities.XmlSettings;
 import no.ntnu.idatg2001.torgrilt.poker.Card;
 
+/**
+ * > A Card3D is a 3D object that represents a playing card.
+ */
 @UtilityClass
 public class Card3D {
 
@@ -30,19 +34,40 @@ public class Card3D {
   private static double mouseX = 0;
   private static double mouseY = 0;
 
+  private final String backFace = "playingCards/backFace/WhiteLarge.png";
+  private final String randString = "Random";
+  private final String cardImageFolder = "playingCards/";
+
+  /**
+   * It takes a list of cards and returns a group of cards.
+   *
+   * @param cards The list of cards to be displayed.
+   * @return A group of cards.
+   */
   public static Group getDeck(List<Card> cards) {
     Group deckOfCard = new Group();
     deckOfCard.setDepthTest(DepthTest.ENABLE);
-    int i = 1;
-    for (Card card : cards) {
+    IntStream.range(0, cards.size()).mapToObj(i -> {
+      Card card = cards.get(i);
       Group temp = assembleCard(card);
       temp.setTranslateZ(GlobalElements.getCardDepth() * i);
-      deckOfCard.getChildren().add(temp);
-      i++;
-    }
+      return temp;
+    }).forEach(deckOfCard.getChildren()::add);
     return deckOfCard;
   }
 
+  /**
+   * It creates a group of two cards, one for each of the player's cards,
+   * and adds mouse listeners to the group so that
+   * when the mouse enters the group, the cards flip over to show their front side,
+   * and when the mouse exits the group, the
+   * cards flip back over to show their back side.
+   *
+   * @param playerHand1 The first card in the player's hand.
+   * @param playerHand2 The second card in the player's hand.
+   * @param stage       the stage that the hand will be displayed on
+   * @return A Group object that contains two cards.
+   */
   public static Group getPlayerHand(Card playerHand1, Card playerHand2, Stage stage) {
     Group hand = getOpponentHand(playerHand1, playerHand2);
 
@@ -77,7 +102,7 @@ public class Card3D {
     });
 
     hand.setOnMouseExited(event -> {
-      Image backSideImage = new Image("playingCards/backFace/WhiteLarge.png");
+      Image backSideImage = new Image(backFace);
 
       // create materials for the front and back boxes
       PhongMaterial backSideMaterial = getMaterial(backSideImage);
@@ -91,6 +116,13 @@ public class Card3D {
     return hand;
   }
 
+  /**
+   * It takes two cards, assembles them into a group, and then returns that group.
+   *
+   * @param playerHand1 The first card in the player's hand.
+   * @param playerHand2 The card that is on top of the deck
+   * @return A group of two cards.
+   */
   public static Group getOpponentHand(Card playerHand1, Card playerHand2) {
     Group card1 = assembleCard(playerHand1);
     card1.setDepthTest(DepthTest.ENABLE);
@@ -105,6 +137,13 @@ public class Card3D {
     return new Group(card1, card2);
   }
 
+
+  /**
+   * "Update the front of the card to show the current image."
+   *
+   * <p>.
+   * The first line of the function gets the card from the MainMenu class
+   */
   public static void updateSplashCard() {
     Group card = MainMenu.getCard();
 
@@ -115,6 +154,13 @@ public class Card3D {
     cardFace.setMaterial(frontMaterial);
   }
 
+  /**
+   * It creates a 3D card with a front and back face,
+   * and then rotates the card based on the mouse's position.
+   *
+   * @param stage The stage that the card will be displayed on.
+   * @return A Group object that contains a Box object for the front and back of the card.
+   */
   public static Group getSplashCard(Stage stage) {
     Image frontImage = getFrontImage();
     PhongMaterial frontMaterial = getMaterial(frontImage);
@@ -125,7 +171,7 @@ public class Card3D {
     front.setTranslateZ(0);
     front.setMaterial(frontMaterial);
 
-    Image backImage = new Image("playingCards/backFace/WhiteLarge.png");
+    Image backImage = new Image(backFace);
     PhongMaterial backMaterial = getMaterial(backImage);
 
     Box back =
@@ -147,6 +193,11 @@ public class Card3D {
     return card;
   }
 
+  /**
+   * Rotate the card around the Y axis for 5 seconds, indefinitely.
+   *
+   * @param card The card to be animated.
+   */
   public static void animate3dCard(Group card) {
     rotate = new RotateTransition(Duration.millis(5000));
     rotate.setNode(card);
@@ -194,26 +245,26 @@ public class Card3D {
       };
       String[] suit = {"Clubs", "Diamonds", "Hearts", "Spades"};
 
-      if (settingCardSuit.equals("Random") && settingCardRank.equals("Random")) {
+      if (settingCardSuit.equals(randString) && settingCardRank.equals(randString)) {
         int indexRank = rand.nextInt(rank.length);
         String cardRank = rank[indexRank];
 
         int indexSuit = rand.nextInt(suit.length);
         String cardSuit = suit[indexSuit];
 
-        animatedCard = "playingCards/" + cardSuit + "/" + cardRank + ".png";
-      } else if (!settingCardSuit.equals("Random") && settingCardRank.equals("Random")) {
+        animatedCard = cardImageFolder + cardSuit + "/" + cardRank + ".png";
+      } else if (!settingCardSuit.equals(randString) && settingCardRank.equals(randString)) {
         int indexRank = rand.nextInt(rank.length);
         String cardRank = rank[indexRank];
 
-        animatedCard = "playingCards/" + settingCardSuit + "/" + cardRank + ".png";
-      } else if (settingCardSuit.equals("Random")) {
+        animatedCard = cardImageFolder + settingCardSuit + "/" + cardRank + ".png";
+      } else if (settingCardSuit.equals(randString)) {
         int indexSuit = rand.nextInt(suit.length);
         String cardSuit = suit[indexSuit];
 
-        animatedCard = "playingCards/" + cardSuit + "/" + settingCardRank + ".png";
+        animatedCard = cardImageFolder + cardSuit + "/" + settingCardRank + ".png";
       } else {
-        animatedCard = "playingCards/" + settingCardSuit + "/" + settingCardRank + ".png";
+        animatedCard = cardImageFolder + settingCardSuit + "/" + settingCardRank + ".png";
       }
 
     } catch (Exception e) {
@@ -233,7 +284,7 @@ public class Card3D {
     card.setTranslateZ(GlobalElements.getCardDepth() / 2);
     card.setMaterial(frontMaterial);
 
-    Image backSideImage = new Image("playingCards/backFace/WhiteLarge.png");
+    Image backSideImage = new Image(backFace);
     PhongMaterial backMaterial = getMaterial(backSideImage);
 
     Box cardBack =
@@ -246,6 +297,14 @@ public class Card3D {
     return new Group(card, cardBack);
   }
 
+  /**
+   * It creates a PhongMaterial object, sets its diffuse map to the image passed in,
+   * sets its diffuse color to white,
+   * sets its specular color to white, and sets its specular power to 30.
+   *
+   * @param frontImage The image to be used as the front of the card.
+   * @return A PhongMaterial object.
+   */
   public static PhongMaterial getMaterial(Image frontImage) {
     PhongMaterial frontMaterial = new PhongMaterial();
     frontMaterial.setDiffuseMap(frontImage);
