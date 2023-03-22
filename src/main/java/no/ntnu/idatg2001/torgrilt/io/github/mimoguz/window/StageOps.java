@@ -32,6 +32,7 @@ public class StageOps {
   private interface DwmSupport extends Library {
     DwmSupport INSTANCE = Native.load("dwmapi", DwmSupport.class);
 
+    @SuppressWarnings("checkstyle:MethodName")
     WinNT.HRESULT DwmSetWindowAttribute(
         WinDef.HWND hwnd,
         int dwAttribute,

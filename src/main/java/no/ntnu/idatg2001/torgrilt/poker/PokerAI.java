@@ -122,6 +122,7 @@ public class PokerAI {
     return z == 1 ? raise(bet * 2) : callCheck();
   }
 
+  @SuppressWarnings("SameReturnValue")
   private static int fold() {
     displayAction("Fold");
     GameFloor.aiFolded();
