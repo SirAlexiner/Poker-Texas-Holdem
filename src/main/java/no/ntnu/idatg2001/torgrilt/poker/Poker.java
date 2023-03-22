@@ -46,7 +46,7 @@ public class Poker {
           FOUR_OF_A_KIND, STRAIGHT_FLUSH -> {
         strength += getHighest(hand)
             + Arrays.stream(hand)
-            .mapToInt(card -> card.getRank().getRankInt())
+            .mapToInt(card -> card.rank().getRankInt())
             .max()
             .orElse(0) / 10.0;
         if (handType.equals(Hands.TWO_PAIR) || handType.equals(Hands.FOUR_OF_A_KIND)) {
@@ -72,13 +72,13 @@ public class Poker {
     int[] rank = new int[13];
     int[] suit = new int[4];
     Arrays.stream(hand).forEach(card -> {
-      rank[card.getRank().getRankInt()]++;
-      suit[card.getSuit().getSuitInt()]++;
+      rank[card.rank().getRankInt()]++;
+      suit[card.suit().getSuitInt()]++;
     });
     Optional.ofNullable(GameFloor.getBoard())
         .ifPresent(board -> board.forEach(card -> {
-          rank[card.getRank().getRankInt()]++;
-          suit[card.getSuit().getSuitInt()]++;
+          rank[card.rank().getRankInt()]++;
+          suit[card.suit().getSuitInt()]++;
         }));
     return getHandEnum(rank, suit, hand);
   }
@@ -87,9 +87,9 @@ public class Poker {
     int maxIndex = getHighest(hand) / 2;
     int nextMaxIndex = 0;
     int[] rank = new int[13];
-    Arrays.stream(hand).forEach(card -> rank[card.getRank().getRankInt()]++);
+    Arrays.stream(hand).forEach(card -> rank[card.rank().getRankInt()]++);
     Optional.ofNullable(GameFloor.getBoard())
-        .ifPresent(board -> board.forEach(card -> rank[card.getRank().getRankInt()]++));
+        .ifPresent(board -> board.forEach(card -> rank[card.rank().getRankInt()]++));
     return IntStream.range(1, rank.length).filter(i ->
             rank[i] != maxIndex
                 && rank[i] > rank[nextMaxIndex]
@@ -102,9 +102,9 @@ public class Poker {
 
   private static int getHighest(Card[] hand) {
     int[] rank = new int[13];
-    Arrays.stream(hand).forEach(card -> rank[card.getRank().getRankInt()]++);
+    Arrays.stream(hand).forEach(card -> rank[card.rank().getRankInt()]++);
     Optional.ofNullable(GameFloor.getBoard())
-        .ifPresent(board -> board.forEach(card -> rank[card.getRank().getRankInt()]++));
+        .ifPresent(board -> board.forEach(card -> rank[card.rank().getRankInt()]++));
     int maxIndex = 0;
     return IntStream.range(1, rank.length).filter(i ->
             rank[i] > rank[maxIndex]
@@ -143,8 +143,8 @@ public class Poker {
   }
 
   private static boolean isRoyalAndFlush(Suits countedSuit, ArrayList<Card> suitCards) {
-    return suitCards.stream().filter(card -> card.getSuit().equals(countedSuit))
-        .map(Card::getRank)
+    return suitCards.stream().filter(card -> card.suit().equals(countedSuit))
+        .map(Card::rank)
         .distinct()
         .sorted()
         .toList()
@@ -153,7 +153,7 @@ public class Poker {
 
   private static EnumMap<Suits, ArrayList<Card>> getSuitMap(ArrayList<Card> boardHand) {
     return boardHand.stream()
-        .collect(Collectors.groupingBy(Card::getSuit, () -> new EnumMap<>(Suits.class),
+        .collect(Collectors.groupingBy(Card::suit, () -> new EnumMap<>(Suits.class),
             Collectors.toCollection(ArrayList::new)));
   }
 
@@ -170,8 +170,8 @@ public class Poker {
     boardHand.addAll(GameFloor.getBoard());
     boardHand.addAll(Arrays.asList(hand));
     boardHand.stream()
-        .filter(card -> card.getSuit().equals(flushCard))
-        .forEach(card -> rank[card.getRank().getRankInt()]++);
+        .filter(card -> card.suit().equals(flushCard))
+        .forEach(card -> rank[card.rank().getRankInt()]++);
     return isStraight(rank);
   }
 
